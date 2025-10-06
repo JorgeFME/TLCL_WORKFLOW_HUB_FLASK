@@ -1,0 +1,39 @@
+# Archivos y directorios a ignorar en el despliegue de Cloud Foundry
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Variables de entorno locales
+.env
+.env.local
+
+# Cache de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Documentación de desarrollo
+README.md
+docs/
+
+# Git
+.git/
+.gitignore

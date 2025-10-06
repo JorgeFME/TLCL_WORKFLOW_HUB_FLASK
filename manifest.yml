@@ -1,0 +1,13 @@
+---
+applications:
+- name: tlcl-workflows-hub-dev
+  memory: 512M
+  instances: 1
+  buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.8.4
+  command: gunicorn --bind 0.0.0.0:$PORT app:app
+  health-check-type: http
+  health-check-http-endpoint: /health
+  timeout: 180
+  env:
+    PYTHONUNBUFFERED: true
+    FLASK_ENV: development

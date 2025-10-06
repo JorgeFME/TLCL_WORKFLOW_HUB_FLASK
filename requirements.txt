@@ -1,0 +1,6 @@
+hdbcli==2.18.27
+cfenv==0.5.3
+Flask==2.3.3
+Flask-CORS==4.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
