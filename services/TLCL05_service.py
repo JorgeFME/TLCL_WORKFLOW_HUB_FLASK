@@ -4,9 +4,9 @@ Encapsula la lógica de negocio de la transferencia de datos de tabla temporal a
 """
 
 from db_connection import HanaConnection
-from queries.electric_fact import ElectricFactQueries
+from queries.TLCL05_queries import TLCL05Queries
 
-class ElectricFactService:
+class TLCL05Service:
     """Servicio para gestionar la transferencia de datos de facturación eléctrica."""
     
     def __init__(self):
@@ -41,7 +41,7 @@ class ElectricFactService:
                 return result
             
             # Crear instancia de consultas
-            self.queries = ElectricFactQueries(self.hana_conn)
+            self.queries = TLCL05Queries(self.hana_conn)
             
             # 1. Obtener datos de la tabla temporal
             result['details']['steps_completed'].append("Iniciando proceso de transferencia")
@@ -156,7 +156,7 @@ class ElectricFactService:
                 return result
             
             # Crear instancia de consultas
-            self.queries = ElectricFactQueries(self.hana_conn)
+            self.queries = TLCL05Queries(self.hana_conn)
             
             # Obtener datos
             temp_result = self.queries.get_temp_electric_fact_data()

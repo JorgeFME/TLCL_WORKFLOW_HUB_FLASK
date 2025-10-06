@@ -5,7 +5,7 @@ Contiene todas las queries relacionadas con TELCEL_EE_ELECTRICFACT y TELCEL_EE_T
 
 from config import DB_CONFIG
 
-class ElectricFactQueries:
+class TLCL05Queries:
     """Clase para gestionar las consultas específicas de facturación eléctrica."""
     
     def __init__(self, connection):

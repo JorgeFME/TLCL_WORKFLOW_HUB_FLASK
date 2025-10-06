@@ -5,7 +5,8 @@ Proporciona endpoints para la gestión de workflows de transferencia de datos.
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from routes.electric_fact_routes import electric_fact_bp
+from routes.TLCL05_routes import TLCL05_bp
+from routes.COBCEN_routes import COBCEN_bp
 from config import DB_CONFIG
 
 
@@ -28,7 +29,8 @@ def create_app():
     CORS(app)
 
     # Registrar blueprints
-    app.register_blueprint(electric_fact_bp)
+    app.register_blueprint(TLCL05_bp)
+    app.register_blueprint(COBCEN_bp)
 
     # Ruta raíz para información general de la API
     @app.route("/")
@@ -46,24 +48,43 @@ def create_app():
                         "endpoints": {
                             "transfer": {
                                 "method": "POST",
-                                "url": "/api/electric-fact/transfer",
+                                "url": "/api/TLCL05/transfer",
                                 "description": "Ejecuta transferencia de datos de facturación eléctrica",
                             },
                             "preview": {
                                 "method": "GET",
-                                "url": "/api/electric-fact/preview",
+                                "url": "/api/TLCL05/preview",
                                 "description": "Vista previa de datos temporales",
                                 "parameters": "limit (opcional), format (opcional)",
                             },
                             "health_service": {
                                 "method": "GET",
-                                "url": "/api/electric-fact/health",
+                                "url": "/api/TLCL05/health",
                                 "description": "Estado del servicio de facturación eléctrica",
                             },
                             "health_general": {
                                 "method": "GET",
                                 "url": "/health",
                                 "description": "Estado general de la aplicación",
+                            },
+                        }
+                    },
+                    "COBCEN": {
+                        "endpoints": {
+                            "site_data": {
+                                "method": "POST",
+                                "url": "/api/COBCEN/site",
+                                "description": "Obtiene datos de la tabla ELCEL_EE_SITE (TOP 1)",
+                            },
+                            "preview": {
+                                "method": "GET",
+                                "url": "/api/COBCEN/preview",
+                                "description": "Vista previa de datos COBCEN disponibles",
+                            },
+                            "health_service": {
+                                "method": "GET",
+                                "url": "/api/COBCEN/health",
+                                "description": "Estado del servicio COBCEN",
                             },
                         }
                     },

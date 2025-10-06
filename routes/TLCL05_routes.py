@@ -4,12 +4,12 @@ Define los endpoints relacionados con la transferencia de datos de facturación 
 """
 
 from flask import Blueprint, request, jsonify
-from services.electric_fact_service import ElectricFactService
+from services.TLCL05_service import TLCL05Service
 
 # Crear blueprint para las rutas de facturación eléctrica
-electric_fact_bp = Blueprint('electric_fact', __name__, url_prefix='/api/electric-fact')
+TLCL05_bp = Blueprint('TLCL05', __name__, url_prefix='/api/TLCL05')
 
-@electric_fact_bp.route('/transfer', methods=['POST'])
+@TLCL05_bp.route('/transfer', methods=['POST'])
 def transfer_electric_fact_data():
     """
     Endpoint para ejecutar la transferencia de datos de facturación eléctrica.
@@ -18,7 +18,7 @@ def transfer_electric_fact_data():
         JSON: Resultado de la operación de transferencia.
     """
     try:
-        service = ElectricFactService()
+        service = TLCL05Service()
         result = service.transfer_electric_fact_data()
         
         # Determinar el código de estado HTTP basado en el resultado
@@ -43,7 +43,7 @@ def transfer_electric_fact_data():
         }
         return jsonify(error_result), 500
 
-@electric_fact_bp.route('/preview', methods=['GET'])
+@TLCL05_bp.route('/preview', methods=['GET'])
 def get_preview():
     """Obtiene una vista previa de los datos temporales."""
     try:
@@ -65,7 +65,7 @@ def get_preview():
                 'message': 'El parámetro format debe ser "objects" o "arrays"'
             }), 400
         
-        service = ElectricFactService()
+        service = TLCL05Service()
         result = service.get_temp_data_preview(limit, format_type)
         
         if result['status'] == 'success':
@@ -83,7 +83,7 @@ def get_preview():
             }
         }), 500
 
-@electric_fact_bp.route('/health', methods=['GET'])
+@TLCL05_bp.route('/health', methods=['GET'])
 def health_check():
     """
     Endpoint de health check para verificar que el servicio está funcionando.
