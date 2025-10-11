@@ -1,12 +1,13 @@
 """
-Módulo para gestionar las consultas SQL específicas del proceso SITE.
-Contiene todas las queries relacionadas con TELCEL_EE_SITE.
+Módulo para gestionar las consultas SQL específicas del proceso COBCEN.
+Incluye utilidades para ejecutar el script SQL de merges definido en queryCobcen.sql.
 """
 
-from config import DB_CONFIG
+import os
+from utils.sql_runner import SqlRunner
 
 class COBCENQueries:
-    """Clase para gestionar las consultas específicas del proceso SITE."""
+    """Clase para gestionar las consultas específicas del proceso COBCEN."""
     
     def __init__(self, connection):
         """Inicializa la clase con una conexión existente.
@@ -16,57 +17,34 @@ class COBCENQueries:
         """
         self.connection = connection
     
-    def get_site_data(self):
-        """Obtiene el primer registro de la tabla TELCEL_EE_SITE.
-        
+    # Eliminado: métodos de preview y utilidades de columnas no utilizados
+
+    def run_cobcen_sql_script(self):
+        """Ejecuta el script SQL de COBCEN ubicado en queries/COBCEN_merge.sql.
+
+        Ejecuta las sentencias MERGE para SITE, ADDRESS, GATEWAY y SIM.
+
         Returns:
-            tuple: (columnas, datos) donde columnas es una lista de nombres de columnas
-                   y datos es una lista con el primer registro.
-            None: Si ocurre un error o no hay datos.
+            dict: Resumen de ejecución con número de sentencias ejecutadas y estado.
         """
         try:
-            cursor = self.connection.cursor
-            query = f'SELECT TOP 1 * FROM "{DB_CONFIG["schema"]}"."TELCEL_EE_SITE"'
-            cursor.execute(query)
-            
-            # Obtener nombres de columnas
-            columns = [desc[0] for desc in cursor.description]
-            
-            # Obtener el primer registro
-            result = cursor.fetchone()
-            
-            if result:
-                return columns, [result]
+            # Construir ruta absoluta del archivo SQL
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            sql_path = os.path.join(base_dir, 'COBCEN_merge.sql')
+
+            # Usar el runner común para ejecutar el archivo
+            runner = SqlRunner(self.connection)
+            res = runner.execute_sql_file(sql_path, commit_mode='end', stop_on_error=True)
+
+            # Ajustar mensaje y detalles para COBCEN
+            if res['success']:
+                res['message'] = 'Script COBCEN ejecutado correctamente'
             else:
-                return columns, []
-                
+                res['message'] = f"Error al ejecutar script COBCEN: {res.get('message', 'desconocido')}"
+            return res
         except Exception as e:
-            print(f"Error al obtener datos de TELCEL_EE_SITE: {e}")
-            return None
-    
-    def get_table_columns(self, table_name):
-        """Obtiene los nombres de las columnas de una tabla.
-        
-        Args:
-            table_name (str): Nombre completo de la tabla (esquema.tabla).
-            
-        Returns:
-            list: Lista de nombres de columnas.
-            None: Si ocurre un error.
-        """
-        try:
-            cursor = self.connection.cursor
-            # Consulta para obtener metadatos de columnas usando SYS.TABLE_COLUMNS
-            query = f"""
-            SELECT COLUMN_NAME 
-            FROM SYS.TABLE_COLUMNS 
-            WHERE SCHEMA_NAME = '{DB_CONFIG['schema']}' 
-            AND TABLE_NAME = '{table_name.split('.')[-1]}'
-            ORDER BY POSITION
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            return [row[0] for row in results]
-        except Exception as e:
-            print(f"Error al obtener columnas de la tabla {table_name}: {e}")
-            return None
+            return {
+                'success': False,
+                'message': f'Error al ejecutar script COBCEN: {str(e)}',
+                'details': None
+            }

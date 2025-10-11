@@ -1,70 +1,59 @@
 # TLCL Workflows Hub
 
-API Flask para gestión de workflows y consultas de datos eléctricos conectada a SAP HANA Cloud.
+API Flask para gestión de workflows de transferencia y merge de datos sobre SAP HANA Cloud.
 
-## 📋 Descripción
+## Descripción
 
-Esta aplicación Flask proporciona endpoints REST para consultar datos de hechos eléctricos desde una base de datos SAP HANA Cloud. Está diseñada para funcionar tanto en desarrollo local como desplegada en SAP BTP Cloud Foundry.
+La aplicación ofrece endpoints REST para ejecutar procesos de negocio (p. ej., TLCL05 y COBCEN). Adopta un enfoque híbrido para consultas SQL:
+- SQL en archivos `.sql` para operaciones complejas y multi‑sentencia (MERGE, cargas, DDL/DML secuenciales).
+- SQL inline en Python para consultas parametrizadas y de lectura simples.
+- Una utilidad común (`utils/sql_runner.py`) normaliza la ejecución (archivos e inline), commits y manejo de errores.
 
-## 🚀 Configuración Local
+## Configuración Local
 
-### Prerrequisitos
-
+Prerrequisitos:
 - Python 3.12+
 - Acceso a SAP HANA Cloud
-- Cloud Foundry CLI (para despliegue)
+- Cloud Foundry CLI (para despliegue opcional)
 
-### Instalación
+Instalación:
+1) Clonar el repositorio
+   ```bash
+   git clone <repository-url>
+   cd TLCL_WORKFLOW_HUB_FLASK
+   ```
+2) Crear entorno virtual
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows
+   # source .venv/bin/activate  # Linux/Mac
+   ```
+3) Instalar dependencias
+   ```bash
+   pip install -r requirements.txt
+   ```
+4) Configurar variables de entorno (.env)
+   ```env
+   HANA_HOST=tu-hana-host.hanacloud.ondemand.com
+   HANA_PORT=443
+   HANA_USER=tu_usuario_hana
+   HANA_PASSWORD=tu_password_hana
+   HANA_SCHEMA=tu_schema_hana
+   ```
+5) Ejecutar la aplicación
+   ```bash
+   python app.py
+   ```
 
-1. **Clonar el repositorio:**
+## Despliegue en Cloud Foundry
+
+Credenciales:
+- En Cloud Foundry, define las variables de entorno con `cf set-env` y reinicia la app.
+- El endpoint raíz (`/`) incluye `hana_schema` para identificar el entorno activo.
+
+Ejemplo rápido (DEV):
 ```bash
-git clone <repository-url>
-cd tlcl-workflows-hub
-```
-
-2. **Crear entorno virtual:**
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
-```
-
-3. **Instalar dependencias:**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configurar variables de entorno:**
-Crear archivo `.env` con las credenciales de HANA:
-```env
-HANA_HOST=tu-hana-host.hanacloud.ondemand.com
-HANA_PORT=443
-HANA_USER=tu_usuario_hana
-HANA_PASSWORD=tu_password_hana
-HANA_SCHEMA=tu_schema_hana
-```
-
-5. **Ejecutar la aplicación:**
-```bash
-python app.py
-```
-
-## ☁️ Despliegue en Cloud Foundry
-
-### 🔑 Configuración de Credenciales
-
-**IMPORTANTE:** Cloud Foundry NO lee archivos `.env` automáticamente. Las credenciales deben configurarse como variables de entorno en la plataforma.
-
-#### Cómo funcionan las credenciales:
-
-- **Desarrollo Local:** `load_dotenv()` lee el archivo `.env`
-- **Cloud Foundry:** `os.getenv()` obtiene variables del entorno de CF
-
-#### Configuración por Espacios
-
-**Para el espacio DEV:**
-```bash
-cf target -s DEV
+cf target -s <DEV o PRD>
 cf set-env tlcl-workflows-hub-dev HANA_HOST "tu-hana-host.hanacloud.ondemand.com"
 cf set-env tlcl-workflows-hub-dev HANA_PORT "443"
 cf set-env tlcl-workflows-hub-dev HANA_USER "tu_usuario_hana"
@@ -73,238 +62,120 @@ cf set-env tlcl-workflows-hub-dev HANA_SCHEMA "tu_schema_hana"
 cf restart tlcl-workflows-hub-dev
 ```
 
-**Para el espacio PRD:**
-```bash
-cf target -s PRD
-cf set-env tlcl-workflows-hub-prd HANA_HOST "prod-hana-host.hanacloud.ondemand.com"
-cf set-env tlcl-workflows-hub-prd HANA_PORT "443"
-cf set-env tlcl-workflows-hub-prd HANA_USER "prod_usuario_hana"
-cf set-env tlcl-workflows-hub-prd HANA_PASSWORD "prod_password_hana"
-cf set-env tlcl-workflows-hub-prd HANA_SCHEMA "prod_schema_hana"
-cf restart tlcl-workflows-hub-prd
-```
-
-#### Verificar Configuración
-
-```bash
-# Verificar variables configuradas
-cf env tlcl-workflows-hub-dev
-
-# Ver logs de la aplicación
-cf logs tlcl-workflows-hub-dev --recent
-```
-
-### 📦 Despliegue
-
-1. **Hacer login en Cloud Foundry:**
+Despliegue:
 ```bash
 cf login -a https://api.cf.us10-001.hana.ondemand.com
-```
-
-2. **Seleccionar espacio y desplegar:**
-```bash
 cf target -s DEV
 cf push
 ```
 
-#### Identificación del Entorno en CI/CD
-
-El endpoint principal (`/`) incluye información del esquema HANA para identificar el entorno:
-
-```bash
-curl http://localhost:5000/
-```
-
-Respuesta:
-```json
-{
-  "name": "TLCL Workflows Hub",
-  "version": "1.0.0",
-  "env": "development",
-  "hana_schema": "DEV_SCHEMA",  // Indica el entorno actual
-  "description": "API para gestión de workflows de transferencia de datos",
-  "status": "running"
-}
-```
-
-En tu pipeline CI/CD puedes usar este campo para verificar el entorno:
-- `DEV_SCHEMA` = Entorno de desarrollo
-- `PRD_SCHEMA` = Entorno de producción
-
-1. **Configuración única por espacio:** Las variables de entorno se configuran una sola vez por espacio
-2. **Despliegues automáticos:** Solo requieren `cf push` (las variables persisten)
-3. **Gestión de secretos:** Usar la plataforma CI/CD para gestionar credenciales por ambiente
-
-## 🛠️ Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
-├── app.py                 # Aplicación principal Flask
-├── config.py             # Configuración y validación de variables
-├── db_connection.py      # Conexión a SAP HANA
-├── routes/               # Endpoints REST
-├── services/             # Lógica de negocio
-├── queries/              # Consultas SQL
-├── .env                  # Variables locales (no se despliega)
-├── .cfignore            # Archivos ignorados en CF
-├── manifest.yml         # Configuración de despliegue
-└── requirements.txt     # Dependencias Python
+├── app.py                 # Aplicación Flask y registro de blueprints
+├── config.py              # Carga y validación de variables de entorno
+├── db_connection.py       # Conexión a SAP HANA (HanaConnection)
+├── routes/                # Endpoints por proceso (COBCEN, TLCL05)
+├── services/              # Lógica de negocio y utilidades (SqlRunner)
+├── queries/               # Capa de consultas por proceso y scripts .sql
+├── requirements.txt       # Dependencias Python
+├── manifest.yml           # Config para Cloud Foundry
+└── .env                   # Variables locales (no se despliega)
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
-### 1. Información General
-- **GET** `/` - Información general de la API
-- **GET** `/health` - Health check general y conexión DB
+Generales:
+- `GET /` — Información de la API y workflows registrados
+- `GET /health` — Health check general
 
-### 2. Facturación Eléctrica
+TLCL05 (Facturación Eléctrica):
+- `POST /api/TLCL05/transfer` — Transfiere datos de tabla temporal a final
+- `GET /api/TLCL05/preview` — Vista previa de datos temporales
+- `GET /api/TLCL05/health` — Estado del servicio TLCL05
 
-#### Transferir Datos
-- **POST** `/api/electric-fact/transfer`
-- **Descripción**: Ejecuta la transferencia completa de datos de la tabla temporal a la tabla final
-- **Respuesta**:
-```json
-{
-  "status": "success|partial_success|error",
-  "message": "Descripción del resultado",
-  "details": {
-    "records_processed": 150,
-    "temp_table_cleaned": true,
-    "steps_completed": [
-      "Iniciando proceso de transferencia",
-      "Obtenidos 150 registros de tabla temporal",
-      "..."
-    ]
-  }
-}
-```
+COBCEN:
+- `POST /api/COBCEN/merge` — Ejecuta `queries/COBCEN_merge.sql` (MERGE secuencial)
+- `GET /api/COBCEN/health` — Estado del servicio COBCEN
 
-#### Vista Previa de Datos
-- **GET** `/api/electric-fact/preview?limit=5`
-- **Parámetros**:
-  - `limit` (opcional): Número de registros a mostrar (1-100, default: 5)
-- **Respuesta**:
-```json
-{
-  "status": "success|error",
-  "message": "Descripción del resultado",
-  "data": {
-    "columns": ["COLUMN1", "COLUMN2", "..."],
-    "rows": [
-      ["value1", "value2", "..."],
-      ["value1", "value2", "..."]
-    ],
-    "total_count": 150
-  }
-}
-```
+## Utilidad Común de SQL (SqlRunner)
 
-#### Health Check Específico
-- **GET** `/api/electric-fact/health` - Verifica que el servicio esté funcionando
+Archivo: `utils/sql_runner.py`
+- `execute_sql_file(path, commit_mode='end', stop_on_error=True)`
+  - Limpia comentarios (`--`, `/* ... */`), divide por `;`, ejecuta secuencialmente.
+  - `commit_mode='end'` confirma al final; `'per_statement'` confirma tras cada sentencia.
+  - `stop_on_error=True` detiene al primer error y devuelve el índice de la sentencia.
+- `execute_statements(statements, commit_mode='end', stop_on_error=True)`
+  - Ejecuta una lista de sentencias inline con el mismo modelo de commits y errores.
 
-### 3. Códigos de Estado HTTP
-
-- **200**: Operación exitosa
-- **206**: Operación parcialmente exitosa
-- **400**: Error en la solicitud o datos
-- **404**: Endpoint no encontrado
-- **500**: Error interno del servidor
-
-## 💻 Ejemplos de Uso
-
-### Con cURL
-
-```bash
-# Transferir datos
-curl -X POST http://localhost:5000/api/electric-fact/transfer \
-  -H "Content-Type: application/json"
-
-# Vista previa
-curl -X GET "http://localhost:5000/api/electric-fact/preview?limit=10"
-```
-
-### Con Python requests
-
+Ejemplo (COBCEN):
 ```python
-import requests
-
-# Transferir datos
-response = requests.post('http://localhost:5000/api/electric-fact/transfer')
-result = response.json()
-
-if result['status'] == 'success':
-    print(f"Transferencia exitosa: {result['details']['records_processed']} registros")
-else:
-    print(f"Error: {result['message']}")
-
-# Vista previa
-response = requests.get('http://localhost:5000/api/electric-fact/preview?limit=5')
-preview = response.json()
-
-if preview['status'] == 'success':
-    print(f"Total de registros: {preview['data']['total_count']}")
-    print(f"Columnas: {preview['data']['columns']}")
+from utils.sql_runner import SqlRunner
+runner = SqlRunner(self.connection)
+res = runner.execute_sql_file(sql_path, commit_mode='end', stop_on_error=True)
 ```
 
-## 🔧 Troubleshooting
+## Cómo Crear un Nuevo Proceso (Híbrido)
 
-### Error: Variables de entorno faltantes
+1) Definir nombres y alcance
+- Identifica el nombre corto del proceso (`PROCESS`, p. ej. `MYPROC`) y sus acciones (`merge`, `transfer`, `preview`).
+- Decide qué va en `.sql` (multi‑sentencia) y qué queda inline (SELECTs, pequeñas operaciones con parámetros).
 
-**Problema:** `ValueError: Variables de entorno faltantes: HANA_HOST, HANA_USER...`
+2) Preparar SQL de archivo (si aplica)
+- Crea `queries/PROCESS_merge.sql` con sentencias separadas por `;` y ordenadas según dependencias.
+- Usa comentarios `--` solo como encabezados descriptivos.
 
-**Solución:**
-1. **Local:** Verificar que existe el archivo `.env` con las credenciales
-2. **Cloud Foundry:** Configurar variables con `cf set-env` y reiniciar
+3) Capa de queries
+- Crea `queries/PROCESS_queries.py` con `class PROCESSQueries`.
+- Para `.sql`: importa `SqlRunner`, construye ruta absoluta y llama `execute_sql_file(...)`.
+- Para inline: usa `cursor.execute(...)` o `runner.execute_statements([...])` si hay secuencia.
+- Devuelve dicts con `success`, `message`, `details`.
 
-### Error de conexión a HANA
+4) Capa de servicio
+- Crea `services/PROCESS_service.py` con `class PROCESSService`.
+- Orquesta conexión (`HanaConnection`), invoca la capa de queries y retorna resultados estructurados.
+- Incluye `health_check()` para validar conexión HANA.
 
-**Problema:** No se puede conectar a la base de datos
+5) Endpoints
+- Crea `routes/PROCESS_routes.py` con `Blueprint('PROCESS', url_prefix='/api/PROCESS')`.
+- Define `POST /merge` (o acción principal) que llama `PROCESSService().run_merge()`.
+- Define `GET /health`.
+- Opcional `GET /preview` si el proceso lo requiere.
 
-**Solución:**
-1. Verificar credenciales en SAP HANA Cloud Central
-2. Confirmar que la instancia HANA está activa
-3. Revisar configuración de red/firewall
+6) Registrar en la app
+- En `app.py`: importa y registra `PROCESS_bp`.
+- Actualiza el índice `/` para listar los endpoints del nuevo proceso.
 
-### Aplicación no inicia en CF
+7) Validar
+- Ejecuta `python app.py`.
+- Prueba los endpoints; para scripts `.sql` revisa `details.statements_executed`.
 
-**Problema:** La aplicación falla al iniciar en Cloud Foundry
+## Buenas Prácticas
 
-**Solución:**
-1. Revisar logs: `cf logs tlcl-workflows-hub-dev --recent`
-2. Verificar variables: `cf env tlcl-workflows-hub-dev`
-3. Confirmar que todas las variables HANA están configuradas
+- Parámetros seguros: evita concatenación, usa parámetros del cliente HANA para inline.
+- Transacciones: usa `commit_mode='end'` para consistencia; cambia a `'per_statement'` si necesitas persistencia por paso.
+- Manejo de errores: registra el índice y el mensaje; decide si `stop_on_error` o continuar.
+- Convenciones: nombres descriptivos (`PROCESS_merge.sql`), comentarios de bloque por sección.
+- Logging: mensajes claros por inicio/fin y éxito/error.
+- Pruebas: mock de HANA y modo “dry‑run” si deseas validar parsing de scripts.
 
-## 📚 Documentación Adicional
+## Troubleshooting
 
-- [SAP HANA Cloud Documentation](https://help.sap.com/hana_cloud)
-- [Cloud Foundry Documentation](https://docs.cloudfoundry.org/)
+Variables faltantes:
+- Verifica `.env` en local; en CF usa `cf set-env` y reinicia.
 
-## 🏗️ Arquitectura Escalable
+Conexión HANA:
+- Revisa credenciales, instancia activa y red/firewall.
 
-El proyecto está diseñado para ser escalable:
+Logs en CF:
+```bash
+cf logs <app-name> --recent
+cf env <app-name>
+```
 
-1. **Separación por módulos**: Cada funcionalidad tiene su propio módulo de queries
-2. **Servicios independientes**: La lógica de negocio está separada de las rutas
-3. **Blueprints**: Cada conjunto de endpoints está en su propio blueprint
-4. **Fácil extensión**: Para agregar nuevos workflows:
-   - Crear nuevo archivo en `queries/`
-   - Crear nuevo servicio en `services/`
-   - Crear nuevas rutas en `routes/`
-   - Registrar el blueprint en `app.py`
+## Producción (Opcional)
 
-## 🚀 Configuración de Producción
-
-### Gunicorn (Recomendado)
+Servidor WSGI recomendado:
 ```bash
 gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
-
-### CORS
-La aplicación tiene CORS habilitado para permitir llamadas desde aplicaciones externas en diferentes dominios.
-
-## 🔒 Seguridad
-
-- ✅ Archivo `.env` excluido del despliegue (`.cfignore`)
-- ✅ Credenciales gestionadas como variables de entorno
-- ✅ No se incluyen secretos en el código fuente
-- ⚠️ Usar HTTPS en producción
-- ⚠️ Rotar credenciales periódicamente

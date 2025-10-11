@@ -3,7 +3,7 @@ Módulo para gestionar las consultas SQL específicas de facturación eléctrica
 Contiene todas las queries relacionadas con TELCEL_EE_ELECTRICFACT y TELCEL_EE_TEMPELECTRICFACT.
 """
 
-from config import DB_CONFIG
+from utils.config import DB_CONFIG
 
 class TLCL05Queries:
     """Clase para gestionar las consultas específicas de facturación eléctrica."""

@@ -4,7 +4,7 @@ Proporciona funciones para establecer y cerrar conexiones.
 """
 
 import hdbcli.dbapi
-from config import DB_CONFIG
+from utils.config import DB_CONFIG
 
 class HanaConnection:
     """Clase para gestionar la conexión a SAP HANA."""

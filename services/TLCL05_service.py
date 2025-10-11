@@ -3,7 +3,7 @@ Servicio para gestionar la transferencia de datos de facturación eléctrica.
 Encapsula la lógica de negocio de la transferencia de datos de tabla temporal a tabla final.
 """
 
-from db_connection import HanaConnection
+from utils.db_connection import HanaConnection
 from queries.TLCL05_queries import TLCL05Queries
 
 class TLCL05Service:

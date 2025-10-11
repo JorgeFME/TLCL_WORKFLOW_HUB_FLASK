@@ -7,7 +7,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from routes.TLCL05_routes import TLCL05_bp
 from routes.COBCEN_routes import COBCEN_bp
-from config import DB_CONFIG
+from utils.config import DB_CONFIG
 
 
 def create_app():
@@ -71,15 +71,10 @@ def create_app():
                     },
                     "COBCEN": {
                         "endpoints": {
-                            "site_data": {
+                            "merge": {
                                 "method": "POST",
-                                "url": "/api/COBCEN/site",
-                                "description": "Obtiene datos de la tabla ELCEL_EE_SITE (TOP 1)",
-                            },
-                            "preview": {
-                                "method": "GET",
-                                "url": "/api/COBCEN/preview",
-                                "description": "Vista previa de datos COBCEN disponibles",
+                                "url": "/api/COBCEN/merge",
+                                "description": "Ejecuta script COBCEN (MERGE en múltiples tablas)",
                             },
                             "health_service": {
                                 "method": "GET",
