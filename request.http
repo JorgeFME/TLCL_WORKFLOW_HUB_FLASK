@@ -1,0 +1,21 @@
+#POST /api/TLCL01/transfer
+POST http://127.0.0.1:5000/api/TLCL01/transfer
+Content-Type: application/json
+
+###
+
+# POST /api/TLCL02/transfer
+POST http://192.168.0.103:5000/api/TLCL02/transfer
+Content-Type: application/json
+
+###
+
+# POST /api/TLCL03/merge
+POST http://127.0.0.1:5000/api/TLCL03/merge
+Content-Type: application/json
+
+###
+
+#POST /api/TLCL04/transfer
+POST http://127.0.0.1:5000/api/TLCL04/transfer
+Content-Type: application/json

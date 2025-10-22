@@ -79,6 +79,7 @@ class SqlRunner:
 
             for idx, stmt in enumerate(statements, start=1):
                 try:
+                    # print(stmt)
                     cursor.execute(stmt)
                     executed += 1
                     if commit_mode == 'per_statement':

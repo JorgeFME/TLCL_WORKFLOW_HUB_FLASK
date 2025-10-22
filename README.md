@@ -4,7 +4,7 @@ API Flask para gestión de workflows de transferencia y merge de datos sobre SAP
 
 ## Descripción
 
-La aplicación ofrece endpoints REST para ejecutar procesos de negocio (p. ej., TLCL05 y COBCEN). Adopta un enfoque híbrido para consultas SQL:
+La aplicación ofrece endpoints REST para ejecutar procesos de negocio (p. ej., COBCEN). Adopta un enfoque híbrido para consultas SQL:
 - SQL en archivos `.sql` para operaciones complejas y multi‑sentencia (MERGE, cargas, DDL/DML secuenciales).
 - SQL inline en Python para consultas parametrizadas y de lectura simples.
 - Una utilidad común (`utils/sql_runner.py`) normaliza la ejecución (archivos e inline), commits y manejo de errores.
@@ -72,15 +72,31 @@ cf push
 ## Estructura del Proyecto
 
 ```
-├── app.py                 # Aplicación Flask y registro de blueprints
-├── config.py              # Carga y validación de variables de entorno
-├── db_connection.py       # Conexión a SAP HANA (HanaConnection)
-├── routes/                # Endpoints por proceso (COBCEN, TLCL05)
-├── services/              # Lógica de negocio y utilidades (SqlRunner)
-├── queries/               # Capa de consultas por proceso y scripts .sql
-├── requirements.txt       # Dependencias Python
-├── manifest.yml           # Config para Cloud Foundry
-└── .env                   # Variables locales (no se despliega)
+TLCL_WORKFLOW_HUB_FLASK/
+├── app.py                      # Aplicación principal Flask
+├── requirements.txt            # Dependencias del proyecto
+├── README.md                   # Documentación del proyecto
+├── utils/
+│   ├── config.py              # Configuración de la base de datos
+│   └── db_connection.py       # Gestión de conexiones HANA
+├── queries/
+│   ├── TLCL01_queries.py      # Consultas para Electric Fact
+│   ├── TLCL02_queries.py      # Consultas para KPI
+│   ├── TLCL03_queries.py      # Consultas para Huawei Counters
+│   ├── TLCL04_queries.py      # Consultas para Ericsson Counters
+│   └── COBCEN_queries.py      # Consultas para COBCEN
+├── services/
+│   ├── TLCL01_service.py      # Lógica de negocio Electric Fact
+│   ├── TLCL02_service.py      # Lógica de negocio KPI
+│   ├── TLCL03_service.py      # Lógica de negocio Huawei Counters
+│   ├── TLCL04_service.py      # Lógica de negocio Ericsson Counters
+│   └── COBCEN_service.py      # Lógica de negocio COBCEN
+└── routes/
+    ├── TLCL01_routes.py       # Endpoints REST Electric Fact
+    ├── TLCL02_routes.py       # Endpoints REST KPI
+    ├── TLCL03_routes.py       # Endpoints REST Huawei Counters
+    ├── TLCL04_routes.py       # Endpoints REST Ericsson Counters
+    └── COBCEN_routes.py       # Endpoints REST COBCEN
 ```
 
 ## API Endpoints
@@ -89,10 +105,23 @@ Generales:
 - `GET /` — Información de la API y workflows registrados
 - `GET /health` — Health check general
 
-TLCL05 (Facturación Eléctrica):
-- `POST /api/TLCL05/transfer` — Transfiere datos de tabla temporal a final
-- `GET /api/TLCL05/preview` — Vista previa de datos temporales
-- `GET /api/TLCL05/health` — Estado del servicio TLCL05
+TLCL01 (Electric Fact):
+- `POST /api/TLCL01/transfer` — Ejecuta transferencia de Electric Fact con transformación MESANIO
+- `GET /api/TLCL01/health` — Estado del servicio TLCL01
+- `GET /api/TLCL01/status` — Información general del proceso TLCL01
+
+TLCL02 (KPI):
+- `POST /api/TLCL02/transfer` — Ejecuta transferencia de datos de KPI
+- `GET /api/TLCL02/health` — Estado del servicio TLCL02
+
+TLCL03 (Huawei Counters):
+- `POST /api/TLCL03/transfer` — Ejecuta transferencia de datos de Huawei Counters
+- `GET /api/TLCL03/health` — Estado del servicio TLCL03
+
+TLCL04 (Ericsson Counters):
+- `POST /api/TLCL04/transfer` — Ejecuta transferencia de datos de Ericsson Counters con SQL Executor inicial
+- `GET /api/TLCL04/health` — Estado del servicio TLCL04
+- `GET /api/TLCL04/status` — Información general del proceso TLCL04
 
 COBCEN:
 - `POST /api/COBCEN/merge` — Ejecuta `queries/COBCEN_merge.sql` (MERGE secuencial)

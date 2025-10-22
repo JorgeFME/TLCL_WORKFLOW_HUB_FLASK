@@ -5,7 +5,10 @@ Proporciona endpoints para la gestión de workflows de transferencia de datos.
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from routes.TLCL05_routes import TLCL05_bp
+from routes.TLCL01_routes import tlcl01_bp
+from routes.TLCL02_routes import TLCL02_bp
+from routes.TLCL03_routes import TLCL03_bp
+from routes.TLCL04_routes import tlcl04_bp
 from routes.COBCEN_routes import COBCEN_bp
 from utils.config import DB_CONFIG
 
@@ -29,8 +32,12 @@ def create_app():
     CORS(app)
 
     # Registrar blueprints
-    app.register_blueprint(TLCL05_bp)
+    app.register_blueprint(tlcl01_bp)
     app.register_blueprint(COBCEN_bp)
+    app.register_blueprint(TLCL02_bp)
+    app.register_blueprint(TLCL03_bp)
+    app.register_blueprint(tlcl04_bp)
+
 
     # Ruta raíz para información general de la API
     @app.route("/")
@@ -44,28 +51,69 @@ def create_app():
                 "hana_schema": DB_CONFIG['schema'],
                 "description": "API para gestión de workflows de transferencia de datos",
                 "workflows": {
-                    "Facturación Electrica": {
+                    "TLCL01: Electric Fact": {
                         "endpoints": {
                             "transfer": {
                                 "method": "POST",
-                                "url": "/api/TLCL05/transfer",
-                                "description": "Ejecuta transferencia de datos de facturación eléctrica",
-                            },
-                            "preview": {
-                                "method": "GET",
-                                "url": "/api/TLCL05/preview",
-                                "description": "Vista previa de datos temporales",
-                                "parameters": "limit (opcional), format (opcional)",
+                                "url": "/api/TLCL01/transfer",
+                                "description": "Ejecuta transferencia de datos de Electric Fact con transformación MESANIO",
                             },
                             "health_service": {
                                 "method": "GET",
-                                "url": "/api/TLCL05/health",
-                                "description": "Estado del servicio de facturación eléctrica",
+                                "url": "/api/TLCL01/health",
+                                "description": "Estado del servicio de Electric Fact",
                             },
-                            "health_general": {
+                            "status": {
                                 "method": "GET",
-                                "url": "/health",
-                                "description": "Estado general de la aplicación",
+                                "url": "/api/TLCL01/status",
+                                "description": "Información general del proceso TLCL01",
+                            },
+                        }
+                    },
+                    "TLCL02: KPI": {
+                        "endpoints": {
+                            "transfer": {
+                                "method": "POST",
+                                "url": "/api/TLCL02/transfer",
+                                "description": "Ejecuta transferencia de datos de KPI",
+                            },
+                            "health_service": {
+                                "method": "GET",
+                                "url": "/api/TLCL02/health",
+                                "description": "Estado del servicio de KPI",
+                            },
+                        }
+                    },
+                    "TLCL03: Huawei Counters": {
+                        "endpoints": {
+                            "transfer": {
+                                "method": "POST",
+                                "url": "/api/TLCL03/transfer",
+                                "description": "Ejecuta transferencia de datos de Huawei Counters",
+                            },
+                            "health_service": {
+                                "method": "GET",
+                                "url": "/api/TLCL03/health",
+                                "description": "Estado del servicio de Huawei Counters",
+                            },
+                        }
+                    },
+                    "TLCL04: Ericsson Counters": {
+                        "endpoints": {
+                            "transfer": {
+                                "method": "POST",
+                                "url": "/api/TLCL04/transfer",
+                                "description": "Ejecuta transferencia de datos de Ericsson Counters con SQL Executor inicial",
+                            },
+                            "health_service": {
+                                "method": "GET",
+                                "url": "/api/TLCL04/health",
+                                "description": "Estado del servicio de Ericsson Counters",
+                            },
+                            "status": {
+                                "method": "GET",
+                                "url": "/api/TLCL04/status",
+                                "description": "Información general del proceso TLCL04",
                             },
                         }
                     },

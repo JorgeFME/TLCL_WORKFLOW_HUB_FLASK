@@ -1,0 +1,1317 @@
+{
+    "properties": {},
+    "description": "TLCL04 Carga Counters Ericsson MERGE Dev",
+    "processes": {
+        "tableconsumer1": {
+            "component": "com.sap.database.table.consumer.v3",
+            "metadata": {
+                "label": "TEMPERICSSONCOUNTERS",
+                "x": 201.99999904632568,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "extensible": false,
+                "generation": 2,
+                "config": {
+                    "service": "HANA_DB",
+                    "partitionType": "None",
+                    "serviceConnection": {
+                        "configurationType": "Configuration Manager",
+                        "connectionID": "TLCL_DEV"
+                    },
+                    "source": {
+                        "remoteObjectReference": {
+                            "connection": {
+                                "id": "TLCL_DEV",
+                                "type": "HANA_DB"
+                            },
+                            "name": "TELCEL_EE_TEMPERICSSONCOUNTERS",
+                            "remoteObjectType": "TABLE",
+                            "qualifiedName": "/B4B85072923A44789F391B1E8CB24202/TELCEL_EE_TEMPERICSSONCOUNTERS",
+                            "nativeQualifiedName": "\"B4B85072923A44789F391B1E8CB24202\".\"TELCEL_EE_TEMPERICSSONCOUNTERS\"",
+                            "owner": "B4B85072923A44789F391B1E8CB24202"
+                        },
+                        "dataAccessConfiguration": {
+                            "DATASET_TYPE": "HANA_PHYSICAL_TABLE"
+                        },
+                        "schema": {
+                            "genericType": "TABLE",
+                            "tableBasedRepresentation": {
+                                "attributes": []
+                            }
+                        },
+                        "capabilityProperties": [
+                            {
+                                "name": "isProfileable",
+                                "value": "true"
+                            },
+                            {
+                                "name": "isDeltaEnabled",
+                                "value": "true"
+                            }
+                        ]
+                    }
+                },
+                "outports": [
+                    {
+                        "name": "outTable",
+                        "type": "table",
+                        "vtype-ID": "$GRAPH.generated.tableconsumer1_outTable"
+                    }
+                ]
+            }
+        },
+        "flowagentsqlexecutor1": {
+            "component": "com.sap.dh.ds.sql.executor.v2",
+            "metadata": {
+                "label": "SQL (Truncate)",
+                "x": 708.9999990463257,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "extensible": false,
+                "generation": 2,
+                "config": {
+                    "serviceConnection": {
+                        "configurationType": "Configuration Manager",
+                        "connectionID": "TLCL_DEV"
+                    },
+                    "sqlStatements": "TRUNCATE TABLE \"B4B85072923A44789F391B1E8CB24202\".TELCEL_EE_TEMPERICSSONCOUNTERS;"
+                }
+            }
+        },
+        "graphterminator1": {
+            "component": "com.sap.util.graphTerminator.v2",
+            "metadata": {
+                "label": "Graph Terminator",
+                "x": 893.9999980926514,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "allowedStarPort": true,
+                "generation": 2,
+                "config": {},
+                "inports": [
+                    {
+                        "name": "in",
+                        "type": "scalar",
+                        "isPropagated": true,
+                        "vtype-ID": "com.sap.core.string"
+                    }
+                ]
+            }
+        },
+        "flowagentsqlexecutor2": {
+            "component": "com.sap.dh.ds.sql.executor.v2",
+            "metadata": {
+                "label": "SQL Executor",
+                "x": 17,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "extensible": false,
+                "generation": 2,
+                "config": {
+                    "serviceConnection": {
+                        "configurationType": "Configuration Manager",
+                        "connectionID": "TLCL_DEV"
+                    },
+                    "sqlStatements": "--5G EnergyMeter Ericsson------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_ENERGYMETERERICSSON5G\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, MINPOWERCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYMETERERICSSON5G;\r\n\r\nSELECT TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n       TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n       SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n       TRIM(NODEBNAME) AS IDBTSNAME,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n\t   CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n      END AS VOLTAGE,\r\n\t   0 AS POWERCONSUMPTION,\r\n\t   CASE \r\n        WHEN MINPOWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM MINPOWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM MINPOWERCONSUMPTION) AS DECIMAL)\r\n      END AS MINPOWERCONSUMPTION,\r\n\t   0 AS MAXPOWERCONSUMPTION,\r\n\t   0 AS MIMOSLEEPOPPTIME,\r\n\t   0 AS MIMOSLEEPTIME, \r\n\t   0 AS CELLSLEEPFAILUECAP,\r\n\t   0 AS CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA,\r\n       'EnergyMeter' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYMETERERICSSON5G\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYMETERERICSSON5G;\r\n\r\n--5G EnergyConsumed Ericsson------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_ENERGYCONSUMEDERICSSON5G\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, MINPOWERCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYCONSUMEDERICSSON5G;\r\n\r\nSELECT TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n       TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n       SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n       TRIM(NODEBNAME) AS IDBTSNAME,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n\t   CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n      END AS VOLTAGE,\r\n\t   0 AS POWERCONSUMPTION,\r\n\t   CASE \r\n        WHEN MINPOWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM MINPOWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM MINPOWERCONSUMPTION) AS DECIMAL)\r\n      END AS MINPOWERCONSUMPTION,\r\n\t   0 AS MAXPOWERCONSUMPTION,\r\n\t   0 AS MIMOSLEEPOPPTIME,\r\n\t   0 AS MIMOSLEEPTIME, \r\n\t   0 AS CELLSLEEPFAILUECAP,\r\n\t   0 AS CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA,\r\n       'ConsumedEnergyMeasurement' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYCONSUMEDERICSSON5G\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPENERGYCONSUMEDERICSSON5G;\r\n\r\n--BB Consumed Energy Measurement------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_BBCONSUMEDENERGYMEASUREMENTERICSSON\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, POWERCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBCONSUMEDENERGYMEASUREMENTERICSSON;\r\n\r\nSELECT \r\n    TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n    TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n    SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n    TRIM(NODEBNAME) AS IDBTSNAME,\r\n    CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n    CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n    END AS VOLTAGE,\r\n    CASE \r\n        WHEN POWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM POWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM POWERCONSUMPTION) AS DECIMAL)\r\n    END AS POWERCONSUMPTION,\r\n    0 AS MINPOWERCONSUMPTION,\r\n\t0 AS MAXPOWERCONSUMPTION,\r\n\t0 AS MIMOSLEEPOPPTIME,\r\n\t0 AS MIMOSLEEPTIME, \r\n\t0 AS CELLSLEEPFAILUECAP,\r\n\t0 AS CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA,\r\n    'ConsumedEnergyMeasurement' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBCONSUMEDENERGYMEASUREMENTERICSSON\r\nWHERE TRIM(NODEBNAME) NOT LIKE '%NR'\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBCONSUMEDENERGYMEASUREMENTERICSSON;\r\n\r\n--BB Energy Meter------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_BBENERGYMETERERICSSON\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, MAXPOWERCONSUMPTION, MINPOWERRCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBENERGYMETERERICSSON;\r\n\r\nSELECT TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n       TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n       SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n       TRIM(NODEBNAME) AS IDBTSNAME,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n\t   CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n       END AS VOLTAGE,\r\n\t   0 AS POWERCONSUMPTION,\r\n\t   CASE \r\n        WHEN MINPOWERRCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM MINPOWERRCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM MINPOWERRCONSUMPTION) AS DECIMAL)\r\n       END AS MINPOWERCONSUMPTION,\r\n       CASE \r\n        WHEN MAXPOWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM MAXPOWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM MAXPOWERCONSUMPTION) AS DECIMAL)\r\n       END AS MAXPOWERCONSUMPTION,\r\n       0 AS MIMOSLEEPOPPTIME,\r\n\t   0 AS MIMOSLEEPTIME, \r\n\t   0 AS CELLSLEEPFAILUECAP,\r\n\t   0 AS CELLSLEEPTIME,\r\n\t   PROVEEDOR, TECNOLOGIA,\r\n       'EnergyMeter' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBENERGYMETERERICSSON\r\nWHERE TRIM(NODEBNAME) NOT LIKE '%NR'\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPBBENERGYMETERERICSSON;\r\n\r\n--DU Consumed Energy Measurement------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_DUCONSUMEDENERGYMEASUREMENTERICSSON\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, POWERCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUCONSUMEDENERGYMEASUREMENTERICSSON;\r\n\r\nSELECT TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n       TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n       SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n       TRIM(NODEBNAME) AS IDBTSNAME,\r\n       CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n\t   CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n       END AS VOLTAGE,\r\n       CASE \r\n        WHEN POWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM POWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM POWERCONSUMPTION) AS DECIMAL)\r\n       END AS POWERCONSUMPTION,\r\n\t   0 AS MINPOWERCONSUMPTION,\r\n\t   0 AS MAXPOWERCONSUMPTION,\r\n\t   0 AS MIMOSLEEPOPPTIME,\r\n\t   0 AS MIMOSLEEPTIME, \r\n\t   0 AS CELLSLEEPFAILUECAP,\r\n\t   0 AS CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA,\r\n       'ConsumedEnergyMeasurement' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUCONSUMEDENERGYMEASUREMENTERICSSON\r\nWHERE TRIM(NODEBNAME) NOT LIKE '%NR'\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUCONSUMEDENERGYMEASUREMENTERICSSON;\r\n\r\n--DU Energy Meter------------------------------------\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_DUENERGYMETERERICSSON\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, POWERCONSUMPTION, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS ANIOMES\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUENERGYMETERERICSSON;\r\n\r\nSELECT TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n       TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n       SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n       TRIM(NODEBNAME) AS IDBTSNAME,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGY IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGY) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGY) AS DECIMAL)\r\n       END AS CONSUMEDENERGY,\r\n\t   CASE \r\n        WHEN CONSUMEDENERGYACCUMULATED IS NULL OR TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM CONSUMEDENERGYACCUMULATED) AS DECIMAL)\r\n       END AS CONSUMEDENERGYACCUMULATED,\r\n       CASE \r\n        WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n       END AS VOLTAGE,\r\n       CASE \r\n        WHEN POWERCONSUMPTION IS NULL OR TRIM(BOTH ' ' FROM POWERCONSUMPTION) = 'NULL' THEN 0\r\n        ELSE CAST(TRIM(BOTH ' ' FROM POWERCONSUMPTION) AS DECIMAL)\r\n       END AS POWERCONSUMPTION,\r\n\t   0 AS MINPOWERCONSUMPTION,\r\n\t   0 AS MAXPOWERCONSUMPTION,\r\n\t   0 AS MIMOSLEEPOPPTIME,\r\n\t   0 AS MIMOSLEEPTIME, \r\n\t   0 AS CELLSLEEPFAILUECAP,\r\n\t   0 AS CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA,\r\n       'EnergyMeter' AS OBJECTTYPE\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUENERGYMETERERICSSON\r\nWHERE TRIM(NODEBNAME) NOT LIKE '%NR'\r\nINTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS;\r\n\r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPDUENERGYMETERERICSSON;\r\n\r\n--EUTRAN\r\nUPSERT B4B85072923A44789F391B1E8CB24202.TELCEL_EE_EUTRANERICSSON\r\nSELECT \"TIME\", NODEBNAME, \"HOUR\", MIMOSLEEPOPPTIME, MIMOSLEEPTIME, CELLSLEEPFAILUECAP, CELLSLEEPTIME, VOLTAGE, PROVEEDOR, TECNOLOGIA, 1 AS DELTA, \r\n       LPAD(MONTH(TO_DATE(\"TIME\", 'MON DD YYYY')), 2, '0') || '.' || YEAR(TO_DATE(\"TIME\", 'MON DD YYYY')) AS MESANIO\r\nFROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPEUTRANERICSSON;\r\n\r\nMERGE INTO B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPERICSSONCOUNTERS AS principal\r\nUSING (\r\n    SELECT DISTINCT\r\n        TO_VARCHAR(TO_DATE(\"TIME\", 'MON DD YYYY'), 'YYYY-MM-DD') AS FECHA,\r\n        TO_VARCHAR(LPAD(TO_VARCHAR(\"HOUR\"), 2, '0')) || ':00:00' AS HORA,\r\n        SUBSTRING(TRIM(NODEBNAME), 1, 6) AS BTSNAME,\r\n        TRIM(NODEBNAME) AS IDBTSNAME,\r\n        CASE\r\n            WHEN MIMOSLEEPOPPTIME IS NULL OR TRIM(BOTH ' ' FROM MIMOSLEEPOPPTIME) = 'NULL' THEN 0\r\n            ELSE CAST(TRIM(BOTH ' ' FROM MIMOSLEEPOPPTIME) AS DECIMAL)\r\n        END AS MIMOSLEEPOPPTIME,\r\n        CASE\r\n            WHEN MIMOSLEEPTIME IS NULL OR TRIM(BOTH ' ' FROM MIMOSLEEPTIME) = 'NULL' THEN 0\r\n            ELSE CAST(TRIM(BOTH ' ' FROM MIMOSLEEPTIME) AS DECIMAL)\r\n        END AS MIMOSLEEPTIME,\r\n        CASE\r\n            WHEN CELLSLEEPFAILUECAP IS NULL OR TRIM(BOTH ' ' FROM CELLSLEEPFAILUECAP) = 'NULL' THEN 0\r\n            ELSE CAST(TRIM(BOTH ' ' FROM CELLSLEEPFAILUECAP) AS DECIMAL)\r\n        END AS CELLSLEEPFAILUECAP,\r\n        CASE\r\n            WHEN CELLSLEEPTIME IS NULL OR TRIM(BOTH ' ' FROM CELLSLEEPTIME) = 'NULL' THEN 0\r\n            ELSE CAST(TRIM(BOTH ' ' FROM CELLSLEEPTIME) AS DECIMAL)\r\n        END AS CELLSLEEPTIME,\r\n        CASE \r\n            WHEN VOLTAGE IS NULL OR TRIM(BOTH ' ' FROM VOLTAGE) = 'NULL' THEN 0\r\n            ELSE CAST(TRIM(BOTH ' ' FROM VOLTAGE) AS DECIMAL)\r\n        END AS VOLTAGE,\r\n        PROVEEDOR, TECNOLOGIA,\r\n        'EUtranCellFDD' AS OBJECTTYPE\r\n    FROM B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPEUTRANERICSSON AS t1\r\n) AS datosActualizados1\r\nON principal.FECHA = datosActualizados1.\"FECHA\"\r\nAND principal.HORA = datosActualizados1.\"HORA\"\r\nAND principal.BTSNAME = datosActualizados1.BTSNAME\r\nAND principal.IDBTSNAME = datosActualizados1.IDBTSNAME\r\nWHEN MATCHED THEN\r\n    UPDATE SET\r\n        principal.MIMOSLEEPOPPTIME = COALESCE(datosActualizados1.MIMOSLEEPOPPTIME, principal.MIMOSLEEPOPPTIME),\r\n        principal.MIMOSLEEPTIME = COALESCE(datosActualizados1.MIMOSLEEPTIME, principal.MIMOSLEEPTIME),\r\n        principal.CELLSLEEPFAILUECAP = COALESCE(datosActualizados1.CELLSLEEPFAILUECAP, principal.CELLSLEEPFAILUECAP),\r\n        principal.CELLSLEEPTIME = COALESCE(datosActualizados1.CELLSLEEPTIME, principal.CELLSLEEPTIME)\r\nWHEN NOT MATCHED THEN\r\n    INSERT\r\n    (FECHA, HORA, BTSNAME, IDBTSNAME, CONSUMEDENERGY, CONSUMEDENERGYACCUMULATED, VOLTAGE, POWERCONSUMPTION, MINPOWERCONSUMPTION, \r\n    MAXPOWERCONSUMPTION, MIMOSLEEPOPPTIME, MIMOSLEEPTIME, CELLSLEEPFAILUECAP, CELLSLEEPTIME, PROVEEDOR, TECNOLOGIA, OBJECTTYPE)\r\n    VALUES(datosActualizados1.FECHA, datosActualizados1.HORA, datosActualizados1.BTSNAME, datosActualizados1.IDBTSNAME,\r\n    0, 0, 0, 0, 0, 0,\r\n    datosActualizados1.MIMOSLEEPOPPTIME,\r\n    datosActualizados1.MIMOSLEEPTIME,\r\n    datosActualizados1.CELLSLEEPFAILUECAP,\r\n    datosActualizados1.CELLSLEEPTIME,\r\n    datosActualizados1.PROVEEDOR,\r\n    datosActualizados1.TECNOLOGIA,\r\n    datosActualizados1.OBJECTTYPE);\r\n    \r\nTRUNCATE TABLE B4B85072923A44789F391B1E8CB24202.TELCEL_EE_TEMPEUTRANERICSSON;",
+                    "separator": ";"
+                }
+            }
+        },
+        "datatransform1": {
+            "component": "com.sap.datatransform.v2",
+            "metadata": {
+                "label": "Data Transform",
+                "x": 370.9999990463257,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "extensible": false,
+                "generation": 2,
+                "config": {
+                    "definition": {
+                        "nodeType": "ContainerNode",
+                        "inputs": [
+                            {
+                                "id": "8e45640e-3c32-4385-993a-cbc9e1cfedaa",
+                                "nodeType": "InPort",
+                                "name": "input1",
+                                "attributes": [
+                                    {
+                                        "id": "b4076e87-90db-4107-8a61-f0235fb81342",
+                                        "name": "HORA",
+                                        "datatype": "time",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "706ac386-f12a-4e2f-94ce-87c12d9b5ffe",
+                                        "name": "VOLTAGE",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "e8f452c9-aa79-455d-bc6f-181aaf956625",
+                                        "name": "FECHA",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "d37bd5c3-4719-4170-ad91-b9d6c6e8f1c7",
+                                        "name": "BTSNAME",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "0a35ec02-ff39-4d11-89c2-682131dac16e",
+                                        "name": "IDBTSNAME",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "52012da0-988e-4fd7-be9b-ce298767210d",
+                                        "name": "CONSUMEDENERGY",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "e3679612-2129-4332-a434-bd7b94c17535",
+                                        "name": "CONSUMEDENERGYACCUMULATED",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "b74fd47f-2f18-4eae-831b-498101bc742b",
+                                        "name": "POWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "c42fb6ec-07b6-4940-b072-491096a78605",
+                                        "name": "MINPOWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "32a6499b-2012-4eb3-b9c3-bae2a179ca84",
+                                        "name": "MAXPOWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "37b6a6a8-1d78-4073-a78c-b22f0fda89c7",
+                                        "name": "MIMOSLEEPOPPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "ff24a63e-dfe7-42bd-bc67-01349111c206",
+                                        "name": "MIMOSLEEPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "f573d0ea-6866-4441-bd3b-d524b9024d5d",
+                                        "name": "CELLSLEEPFAILUECAP",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "e05bf541-bc27-43f3-a7ee-4fb6a0035e8e",
+                                        "name": "CELLSLEEPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "939580f4-a376-42d6-8918-3f9bfe5836f0",
+                                        "name": "PROVEEDOR",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "1ce5bc62-1461-4456-9788-4dcd4b45a2fb",
+                                        "name": "TECNOLOGIA",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "52f84247-97c4-419e-a99b-c491017ba87b",
+                                        "name": "OBJECTTYPE",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    }
+                                ],
+                                "UILayout": {
+                                    "x": 12,
+                                    "y": 12,
+                                    "height": 80,
+                                    "width": 80
+                                }
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "44d45546-e4cd-4304-9ecc-6a60d9a63576",
+                                "nodeType": "OutPort",
+                                "name": "output1",
+                                "attributes": [
+                                    {
+                                        "id": "7253e9d9-0e4f-49be-a105-21fe41e89228",
+                                        "name": "HORA",
+                                        "datatype": "time",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "27715ef7-aa80-4203-99ca-803c4845b86c",
+                                        "name": "VOLTAGE",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "1a36d118-92cb-4c7a-a896-05ffa00fe6d6",
+                                        "name": "FECHA",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "197f6021-80b3-4d82-b35a-04a8cea36f62",
+                                        "name": "BTSNAME",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "65f6b55d-9e29-4505-a802-648261fdf2d8",
+                                        "name": "IDBTSNAME",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "94ae62f9-bbfd-4821-be47-24865dfada62",
+                                        "name": "CONSUMEDENERGY",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "5dc9c6e3-879e-400e-8411-f6a754f6127c",
+                                        "name": "CONSUMEDENERGYACCUMULATED",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "c588afec-a621-40bc-83db-78cb2e8e6ac1",
+                                        "name": "POWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "61a40436-ab29-4329-aef0-337dead81f4e",
+                                        "name": "MINPOWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "6ce51009-c5bb-4287-a2dd-cf480b72f7c4",
+                                        "name": "MAXPOWERCONSUMPTION",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "d623b9f4-9ebc-45cf-abbe-0afaaa5003fe",
+                                        "name": "MIMOSLEEPOPPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "f796d539-ccc4-4b0f-853f-088c9511023c",
+                                        "name": "MIMOSLEEPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "1b620999-c4da-4b36-a9d1-fdc93987a1c7",
+                                        "name": "CELLSLEEPFAILUECAP",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "99ea5831-0f29-411b-aacf-f0e9de367d30",
+                                        "name": "CELLSLEEPTIME",
+                                        "datatype": "decfloat34",
+                                        "nullable": false
+                                    },
+                                    {
+                                        "id": "10d78c4d-18b1-45e5-bb39-0b57d0d315af",
+                                        "name": "PROVEEDOR",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "efd5410f-154f-4976-b886-4ef29c40faf8",
+                                        "name": "TECNOLOGIA",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "947d836d-a441-4747-97b9-b3041348c04f",
+                                        "name": "OBJECTTYPE",
+                                        "datatype": "string",
+                                        "nullable": false,
+                                        "length": 5000
+                                    },
+                                    {
+                                        "id": "b0132e43-4eee-410b-8c50-0fba4f8428d5",
+                                        "name": "ANIO",
+                                        "datatype": "int8",
+                                        "nullable": true
+                                    },
+                                    {
+                                        "id": "bea986f5-0fbc-4bbf-a3c5-3aeeca0ddd8d",
+                                        "name": "MES",
+                                        "datatype": "int8",
+                                        "nullable": true
+                                    },
+                                    {
+                                        "id": "7e008d5b-b267-457b-ade6-b163feefd1b4",
+                                        "name": "DIA",
+                                        "datatype": "int8",
+                                        "nullable": true
+                                    },
+                                    {
+                                        "id": "f7d3e2ac-7409-43d6-8c1b-118b5e0f4be0",
+                                        "name": "Fecha_Txt",
+                                        "datatype": "string",
+                                        "nullable": true,
+                                        "length": 500
+                                    },
+                                    {
+                                        "id": "89902c15-efdd-40dd-8d32-84f592927fe8",
+                                        "name": "ANIOMES",
+                                        "datatype": "string",
+                                        "nullable": true,
+                                        "length": 8
+                                    }
+                                ],
+                                "mode": "OVERWRITE",
+                                "UILayout": {
+                                    "x": 312,
+                                    "y": 12,
+                                    "height": 80,
+                                    "width": 80
+                                }
+                            }
+                        ],
+                        "nodes": [
+                            {
+                                "id": "e401eed2-6f9d-48bf-bd09-1bd67525c8c1",
+                                "type": "FilterNode",
+                                "nodeType": "FilterNode",
+                                "name": "Projection",
+                                "inputs": [
+                                    {
+                                        "id": "36aad6a6-693a-4920-8a8b-04a9cd0728d6",
+                                        "name": "Projection_Input1",
+                                        "attributes": [
+                                            {
+                                                "id": "392460b5-3dfb-4461-840a-9c4af74abe89",
+                                                "name": "HORA",
+                                                "datatype": "time",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "c7ea30e0-251b-4a96-96b5-06584423fcab",
+                                                "name": "VOLTAGE",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "178d345b-9a1a-4dd4-8ae0-6906e2fb7e51",
+                                                "name": "FECHA",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            },
+                                            {
+                                                "id": "fd10beec-4de0-4666-831c-951f860eaf5a",
+                                                "name": "BTSNAME",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            },
+                                            {
+                                                "id": "04da345b-bb05-4920-b3b5-64c45225964c",
+                                                "name": "IDBTSNAME",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            },
+                                            {
+                                                "id": "ea9acb28-26e9-4d68-a955-078fd854cdf4",
+                                                "name": "CONSUMEDENERGY",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "9bfa71ff-6055-4e79-acca-be2d576b0022",
+                                                "name": "CONSUMEDENERGYACCUMULATED",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "f4dd6248-51ec-49a1-9660-fe0c5fa2976f",
+                                                "name": "POWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "b1e0afd5-83a7-4627-9c90-a79c6ae36b72",
+                                                "name": "MINPOWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "0e8672a3-ad54-46e6-9aa3-6779f2c617ad",
+                                                "name": "MAXPOWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "88ac6890-4c72-4115-9826-4ef9678b7d01",
+                                                "name": "MIMOSLEEPOPPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "3eb0da5d-3087-4d67-8e85-5e0f4aaa6cdd",
+                                                "name": "MIMOSLEEPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "f6f15a8e-0c1e-4f51-a132-6e49dacf1b42",
+                                                "name": "CELLSLEEPFAILUECAP",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "8bf1ab8b-ddb2-4caf-a67f-65c9ab6a451d",
+                                                "name": "CELLSLEEPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false
+                                            },
+                                            {
+                                                "id": "412dfc3d-36da-4ad0-9bb1-625cf771649e",
+                                                "name": "PROVEEDOR",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            },
+                                            {
+                                                "id": "206fa97f-9b46-4257-aea5-da74c0053981",
+                                                "name": "TECNOLOGIA",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            },
+                                            {
+                                                "id": "c506b90a-b1d8-4dd1-937a-8054dbc76b8a",
+                                                "name": "OBJECTTYPE",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "outputs": [
+                                    {
+                                        "id": "2fde728f-7a96-47d5-bfb1-62f8558bae60",
+                                        "name": "Projection_Output1",
+                                        "attributes": [
+                                            {
+                                                "id": "b5ad217b-3af6-482d-8498-f07ede064522",
+                                                "name": "HORA",
+                                                "datatype": "time",
+                                                "nullable": false,
+                                                "expression": "\"HORA\""
+                                            },
+                                            {
+                                                "id": "f89311f1-a4c7-4e69-a66a-00951add6581",
+                                                "name": "VOLTAGE",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"VOLTAGE\""
+                                            },
+                                            {
+                                                "id": "0adb840e-4823-41d9-849f-7a6d1a976620",
+                                                "name": "FECHA",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"FECHA\""
+                                            },
+                                            {
+                                                "id": "6bf67dc5-eb7c-430c-956b-74f5db08d54e",
+                                                "name": "BTSNAME",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"BTSNAME\""
+                                            },
+                                            {
+                                                "id": "e19f8714-f524-4e04-bf3b-4ae72633f7f8",
+                                                "name": "IDBTSNAME",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"IDBTSNAME\""
+                                            },
+                                            {
+                                                "id": "e21f13a9-3059-4b3e-8b18-9874b043352f",
+                                                "name": "CONSUMEDENERGY",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"CONSUMEDENERGY\""
+                                            },
+                                            {
+                                                "id": "c9a44821-d17a-4aa6-a812-3ec21acc7944",
+                                                "name": "CONSUMEDENERGYACCUMULATED",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"CONSUMEDENERGYACCUMULATED\""
+                                            },
+                                            {
+                                                "id": "078c83fa-d8f0-4536-a72c-8cc903ee993f",
+                                                "name": "POWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"POWERCONSUMPTION\""
+                                            },
+                                            {
+                                                "id": "7c505e4d-6143-4e08-bbba-8ec73d5a76ac",
+                                                "name": "MINPOWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"MINPOWERCONSUMPTION\""
+                                            },
+                                            {
+                                                "id": "bb0ccf82-adee-41ca-9a24-34f05c8f45e9",
+                                                "name": "MAXPOWERCONSUMPTION",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"MAXPOWERCONSUMPTION\""
+                                            },
+                                            {
+                                                "id": "e79505af-05a2-4d3e-887f-c8e6090f9ad7",
+                                                "name": "MIMOSLEEPOPPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"MIMOSLEEPOPPTIME\""
+                                            },
+                                            {
+                                                "id": "43625a32-33b2-470d-8cf4-0eaf972c4606",
+                                                "name": "MIMOSLEEPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"MIMOSLEEPTIME\""
+                                            },
+                                            {
+                                                "id": "e953fb95-aa9e-446d-ad20-10d7e54bb8ae",
+                                                "name": "CELLSLEEPFAILUECAP",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"CELLSLEEPFAILUECAP\""
+                                            },
+                                            {
+                                                "id": "1a69bf71-36bd-4a4d-86d8-ab6b91998ac6",
+                                                "name": "CELLSLEEPTIME",
+                                                "datatype": "decfloat34",
+                                                "nullable": false,
+                                                "expression": "\"CELLSLEEPTIME\""
+                                            },
+                                            {
+                                                "id": "19c8ab3b-b7e4-46ad-a58b-1d60a81336b1",
+                                                "name": "PROVEEDOR",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"PROVEEDOR\""
+                                            },
+                                            {
+                                                "id": "c41a31fa-87f2-4c8c-9003-269ca5201581",
+                                                "name": "TECNOLOGIA",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"TECNOLOGIA\""
+                                            },
+                                            {
+                                                "id": "e81ec31f-e583-45ce-a106-e6889f8fdfb5",
+                                                "name": "OBJECTTYPE",
+                                                "datatype": "string",
+                                                "nullable": false,
+                                                "length": 5000,
+                                                "expression": "\"OBJECTTYPE\""
+                                            },
+                                            {
+                                                "id": "27fb3328-7f04-4f32-9914-2db15cd1930e",
+                                                "name": "ANIO",
+                                                "datatype": "int8",
+                                                "nullable": true,
+                                                "expression": "substring(\"FECHA\", 1, 4)"
+                                            },
+                                            {
+                                                "id": "b9b5a437-b98a-4b75-b928-eefc6806a2f2",
+                                                "name": "MES",
+                                                "datatype": "int8",
+                                                "nullable": true,
+                                                "expression": "substring(\"FECHA\", 6, 2)"
+                                            },
+                                            {
+                                                "id": "f2b4c192-3444-4628-a6a9-e5ce563efdbf",
+                                                "name": "DIA",
+                                                "datatype": "int8",
+                                                "nullable": true,
+                                                "expression": "substring(\"FECHA\", 9, 2)"
+                                            },
+                                            {
+                                                "id": "ec55a21c-a16b-44e4-acb7-cd70f3264f39",
+                                                "name": "Fecha_Txt",
+                                                "datatype": "string",
+                                                "nullable": true,
+                                                "length": 500,
+                                                "expression": "substring(\"FECHA\", 1, 10)"
+                                            },
+                                            {
+                                                "id": "a8487468-d1c8-48a5-a312-d3e6616cd690",
+                                                "name": "ANIOMES",
+                                                "datatype": "string",
+                                                "nullable": true,
+                                                "length": 8,
+                                                "expression": "CONCAT(LPAD(MONTH(TO_DATE(FECHA)),2,0),CONCAT('.',YEAR(TO_DATE(FECHA))))"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "UILayout": {
+                                    "x": 142,
+                                    "y": 12,
+                                    "height": 80,
+                                    "width": 120
+                                }
+                            }
+                        ],
+                        "tableMappings": [
+                            {
+                                "source": "8e45640e-3c32-4385-993a-cbc9e1cfedaa",
+                                "target": "36aad6a6-693a-4920-8a8b-04a9cd0728d6",
+                                "attributeMappings": [
+                                    {
+                                        "source": "b4076e87-90db-4107-8a61-f0235fb81342",
+                                        "target": "392460b5-3dfb-4461-840a-9c4af74abe89"
+                                    },
+                                    {
+                                        "source": "706ac386-f12a-4e2f-94ce-87c12d9b5ffe",
+                                        "target": "c7ea30e0-251b-4a96-96b5-06584423fcab"
+                                    },
+                                    {
+                                        "source": "e8f452c9-aa79-455d-bc6f-181aaf956625",
+                                        "target": "178d345b-9a1a-4dd4-8ae0-6906e2fb7e51"
+                                    },
+                                    {
+                                        "source": "d37bd5c3-4719-4170-ad91-b9d6c6e8f1c7",
+                                        "target": "fd10beec-4de0-4666-831c-951f860eaf5a"
+                                    },
+                                    {
+                                        "source": "0a35ec02-ff39-4d11-89c2-682131dac16e",
+                                        "target": "04da345b-bb05-4920-b3b5-64c45225964c"
+                                    },
+                                    {
+                                        "source": "52012da0-988e-4fd7-be9b-ce298767210d",
+                                        "target": "ea9acb28-26e9-4d68-a955-078fd854cdf4"
+                                    },
+                                    {
+                                        "source": "e3679612-2129-4332-a434-bd7b94c17535",
+                                        "target": "9bfa71ff-6055-4e79-acca-be2d576b0022"
+                                    },
+                                    {
+                                        "source": "b74fd47f-2f18-4eae-831b-498101bc742b",
+                                        "target": "f4dd6248-51ec-49a1-9660-fe0c5fa2976f"
+                                    },
+                                    {
+                                        "source": "c42fb6ec-07b6-4940-b072-491096a78605",
+                                        "target": "b1e0afd5-83a7-4627-9c90-a79c6ae36b72"
+                                    },
+                                    {
+                                        "source": "32a6499b-2012-4eb3-b9c3-bae2a179ca84",
+                                        "target": "0e8672a3-ad54-46e6-9aa3-6779f2c617ad"
+                                    },
+                                    {
+                                        "source": "37b6a6a8-1d78-4073-a78c-b22f0fda89c7",
+                                        "target": "88ac6890-4c72-4115-9826-4ef9678b7d01"
+                                    },
+                                    {
+                                        "source": "ff24a63e-dfe7-42bd-bc67-01349111c206",
+                                        "target": "3eb0da5d-3087-4d67-8e85-5e0f4aaa6cdd"
+                                    },
+                                    {
+                                        "source": "f573d0ea-6866-4441-bd3b-d524b9024d5d",
+                                        "target": "f6f15a8e-0c1e-4f51-a132-6e49dacf1b42"
+                                    },
+                                    {
+                                        "source": "e05bf541-bc27-43f3-a7ee-4fb6a0035e8e",
+                                        "target": "8bf1ab8b-ddb2-4caf-a67f-65c9ab6a451d"
+                                    },
+                                    {
+                                        "source": "939580f4-a376-42d6-8918-3f9bfe5836f0",
+                                        "target": "412dfc3d-36da-4ad0-9bb1-625cf771649e"
+                                    },
+                                    {
+                                        "source": "1ce5bc62-1461-4456-9788-4dcd4b45a2fb",
+                                        "target": "206fa97f-9b46-4257-aea5-da74c0053981"
+                                    },
+                                    {
+                                        "source": "52f84247-97c4-419e-a99b-c491017ba87b",
+                                        "target": "c506b90a-b1d8-4dd1-937a-8054dbc76b8a"
+                                    }
+                                ],
+                                "UILayout": {
+                                    "points": "97,52 137,52"
+                                }
+                            },
+                            {
+                                "source": "2fde728f-7a96-47d5-bfb1-62f8558bae60",
+                                "target": "44d45546-e4cd-4304-9ecc-6a60d9a63576",
+                                "attributeMappings": [
+                                    {
+                                        "source": "b5ad217b-3af6-482d-8498-f07ede064522",
+                                        "target": "7253e9d9-0e4f-49be-a105-21fe41e89228"
+                                    },
+                                    {
+                                        "source": "f89311f1-a4c7-4e69-a66a-00951add6581",
+                                        "target": "27715ef7-aa80-4203-99ca-803c4845b86c"
+                                    },
+                                    {
+                                        "source": "0adb840e-4823-41d9-849f-7a6d1a976620",
+                                        "target": "1a36d118-92cb-4c7a-a896-05ffa00fe6d6"
+                                    },
+                                    {
+                                        "source": "6bf67dc5-eb7c-430c-956b-74f5db08d54e",
+                                        "target": "197f6021-80b3-4d82-b35a-04a8cea36f62"
+                                    },
+                                    {
+                                        "source": "e19f8714-f524-4e04-bf3b-4ae72633f7f8",
+                                        "target": "65f6b55d-9e29-4505-a802-648261fdf2d8"
+                                    },
+                                    {
+                                        "source": "e21f13a9-3059-4b3e-8b18-9874b043352f",
+                                        "target": "94ae62f9-bbfd-4821-be47-24865dfada62"
+                                    },
+                                    {
+                                        "source": "c9a44821-d17a-4aa6-a812-3ec21acc7944",
+                                        "target": "5dc9c6e3-879e-400e-8411-f6a754f6127c"
+                                    },
+                                    {
+                                        "source": "078c83fa-d8f0-4536-a72c-8cc903ee993f",
+                                        "target": "c588afec-a621-40bc-83db-78cb2e8e6ac1"
+                                    },
+                                    {
+                                        "source": "7c505e4d-6143-4e08-bbba-8ec73d5a76ac",
+                                        "target": "61a40436-ab29-4329-aef0-337dead81f4e"
+                                    },
+                                    {
+                                        "source": "bb0ccf82-adee-41ca-9a24-34f05c8f45e9",
+                                        "target": "6ce51009-c5bb-4287-a2dd-cf480b72f7c4"
+                                    },
+                                    {
+                                        "source": "e79505af-05a2-4d3e-887f-c8e6090f9ad7",
+                                        "target": "d623b9f4-9ebc-45cf-abbe-0afaaa5003fe"
+                                    },
+                                    {
+                                        "source": "43625a32-33b2-470d-8cf4-0eaf972c4606",
+                                        "target": "f796d539-ccc4-4b0f-853f-088c9511023c"
+                                    },
+                                    {
+                                        "source": "e953fb95-aa9e-446d-ad20-10d7e54bb8ae",
+                                        "target": "1b620999-c4da-4b36-a9d1-fdc93987a1c7"
+                                    },
+                                    {
+                                        "source": "1a69bf71-36bd-4a4d-86d8-ab6b91998ac6",
+                                        "target": "99ea5831-0f29-411b-aacf-f0e9de367d30"
+                                    },
+                                    {
+                                        "source": "19c8ab3b-b7e4-46ad-a58b-1d60a81336b1",
+                                        "target": "10d78c4d-18b1-45e5-bb39-0b57d0d315af"
+                                    },
+                                    {
+                                        "source": "c41a31fa-87f2-4c8c-9003-269ca5201581",
+                                        "target": "efd5410f-154f-4976-b886-4ef29c40faf8"
+                                    },
+                                    {
+                                        "source": "e81ec31f-e583-45ce-a106-e6889f8fdfb5",
+                                        "target": "947d836d-a441-4747-97b9-b3041348c04f"
+                                    },
+                                    {
+                                        "source": "27fb3328-7f04-4f32-9914-2db15cd1930e",
+                                        "target": "b0132e43-4eee-410b-8c50-0fba4f8428d5"
+                                    },
+                                    {
+                                        "source": "b9b5a437-b98a-4b75-b928-eefc6806a2f2",
+                                        "target": "bea986f5-0fbc-4bbf-a3c5-3aeeca0ddd8d"
+                                    },
+                                    {
+                                        "source": "f2b4c192-3444-4628-a6a9-e5ce563efdbf",
+                                        "target": "7e008d5b-b267-457b-ade6-b163feefd1b4"
+                                    },
+                                    {
+                                        "source": "ec55a21c-a16b-44e4-acb7-cd70f3264f39",
+                                        "target": "f7d3e2ac-7409-43d6-8c1b-118b5e0f4be0"
+                                    },
+                                    {
+                                        "source": "a8487468-d1c8-48a5-a312-d3e6616cd690",
+                                        "target": "89902c15-efdd-40dd-8d32-84f592927fe8"
+                                    }
+                                ],
+                                "UILayout": {
+                                    "points": "267,52 307,52"
+                                }
+                            }
+                        ],
+                        "invalidMappings": []
+                    }
+                },
+                "additionalinports": [
+                    {
+                        "name": "input1",
+                        "type": "table",
+                        "isPropagated": true,
+                        "vtype-ID": "$GRAPH.generated.tableconsumer1_outTable"
+                    }
+                ],
+                "additionaloutports": [
+                    {
+                        "name": "output1",
+                        "type": "table",
+                        "vtype-ID": "$GRAPH.generated.datatransform1_output1"
+                    }
+                ]
+            }
+        },
+        "tableproducer1": {
+            "component": "com.sap.database.table.producer.v4",
+            "metadata": {
+                "label": "ERICSSONCOUNTERS",
+                "x": 539.9999990463257,
+                "y": 12,
+                "height": 80,
+                "width": 120,
+                "extensible": false,
+                "generation": 2,
+                "config": {
+                    "service": "HANA_DB",
+                    "serviceConnection": {
+                        "configurationType": "Configuration Manager",
+                        "connectionID": "TLCL_DEV"
+                    },
+                    "source": {
+                        "remoteObjectReference": {
+                            "connection": {
+                                "id": "TLCL_DEV",
+                                "type": "HANA_DB"
+                            },
+                            "name": "TELCEL_EE_ERICSSONCOUNTERS",
+                            "remoteObjectType": "TABLE",
+                            "qualifiedName": "/B4B85072923A44789F391B1E8CB24202/TELCEL_EE_ERICSSONCOUNTERS",
+                            "nativeQualifiedName": "\"B4B85072923A44789F391B1E8CB24202\".\"TELCEL_EE_ERICSSONCOUNTERS\"",
+                            "owner": "B4B85072923A44789F391B1E8CB24202"
+                        },
+                        "dataAccessConfiguration": {
+                            "DATASET_TYPE": "HANA_PHYSICAL_TABLE"
+                        },
+                        "schema": {
+                            "genericType": "TABLE",
+                            "tableBasedRepresentation": {
+                                "attributes": [
+                                    {
+                                        "name": "FECHA",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "HORA",
+                                        "templateType": "time",
+                                        "datatype": "TIME",
+                                        "nativeDatatype": "TIME",
+                                        "nativeLength": 8
+                                    },
+                                    {
+                                        "name": "ANIO",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "MES",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "DIA",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "BTSNAME",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "IDBTSNAME",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "CONSUMEDENERGY",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "CONSUMEDENERGYACCUMULATED",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "VOLTAGE",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "POWERCONSUMPTION",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "MINPOWERCONSUMPTION",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "MAXPOWERCONSUMPTION",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "MIMOSLEEPOPPTIME",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "MIMOSLEEPTIME",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "CELLSLEEPFAILUECAP",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "CELLSLEEPTIME",
+                                        "templateType": "decfloat34",
+                                        "datatype": "DECIMAL",
+                                        "precision": 0,
+                                        "scale": 0,
+                                        "nativeDatatype": "DECIMAL"
+                                    },
+                                    {
+                                        "name": "PROVEEDOR",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "TECNOLOGIA",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "OBJECTTYPE",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    },
+                                    {
+                                        "name": "ANIOMES",
+                                        "templateType": "string",
+                                        "datatype": "STRING",
+                                        "length": 5000,
+                                        "nativeDatatype": "NVARCHAR",
+                                        "nativeLength": 5000
+                                    }
+                                ],
+                                "uniqueKeys": [
+                                    {
+                                        "attributeReferences": [
+                                            "FECHA",
+                                            "HORA",
+                                            "ANIO",
+                                            "BTSNAME",
+                                            "IDBTSNAME",
+                                            "PROVEEDOR",
+                                            "TECNOLOGIA",
+                                            "OBJECTTYPE",
+                                            "ANIOMES"
+                                        ],
+                                        "isPrimary": true
+                                    }
+                                ]
+                            }
+                        },
+                        "capabilityProperties": [
+                            {
+                                "name": "isProfileable",
+                                "value": "true"
+                            },
+                            {
+                                "name": "isDeltaEnabled",
+                                "value": "true"
+                            }
+                        ]
+                    },
+                    "mode": "append",
+                    "attributeMappings": [
+                        {
+                            "expression": "\"Fecha_Txt\"",
+                            "target": "FECHA"
+                        },
+                        {
+                            "expression": "\"HORA\"",
+                            "target": "HORA"
+                        },
+                        {
+                            "expression": "\"ANIO\"",
+                            "target": "ANIO"
+                        },
+                        {
+                            "expression": "\"MES\"",
+                            "target": "MES"
+                        },
+                        {
+                            "expression": "\"DIA\"",
+                            "target": "DIA"
+                        },
+                        {
+                            "expression": "\"BTSNAME\"",
+                            "target": "BTSNAME"
+                        },
+                        {
+                            "expression": "\"IDBTSNAME\"",
+                            "target": "IDBTSNAME"
+                        },
+                        {
+                            "expression": "\"CONSUMEDENERGY\"",
+                            "target": "CONSUMEDENERGY"
+                        },
+                        {
+                            "expression": "\"CONSUMEDENERGYACCUMULATED\"",
+                            "target": "CONSUMEDENERGYACCUMULATED"
+                        },
+                        {
+                            "expression": "\"VOLTAGE\"",
+                            "target": "VOLTAGE"
+                        },
+                        {
+                            "expression": "\"POWERCONSUMPTION\"",
+                            "target": "POWERCONSUMPTION"
+                        },
+                        {
+                            "expression": "\"MINPOWERCONSUMPTION\"",
+                            "target": "MINPOWERCONSUMPTION"
+                        },
+                        {
+                            "expression": "\"MAXPOWERCONSUMPTION\"",
+                            "target": "MAXPOWERCONSUMPTION"
+                        },
+                        {
+                            "expression": "\"MIMOSLEEPOPPTIME\"",
+                            "target": "MIMOSLEEPOPPTIME"
+                        },
+                        {
+                            "expression": "\"MIMOSLEEPTIME\"",
+                            "target": "MIMOSLEEPTIME"
+                        },
+                        {
+                            "expression": "\"CELLSLEEPFAILUECAP\"",
+                            "target": "CELLSLEEPFAILUECAP"
+                        },
+                        {
+                            "expression": "\"CELLSLEEPTIME\"",
+                            "target": "CELLSLEEPTIME"
+                        },
+                        {
+                            "expression": "\"PROVEEDOR\"",
+                            "target": "PROVEEDOR"
+                        },
+                        {
+                            "expression": "\"TECNOLOGIA\"",
+                            "target": "TECNOLOGIA"
+                        },
+                        {
+                            "expression": "\"OBJECTTYPE\"",
+                            "target": "OBJECTTYPE"
+                        },
+                        {
+                            "expression": "\"ANIOMES\"",
+                            "target": "ANIOMES"
+                        }
+                    ],
+                    "upsert": true
+                },
+                "inports": [
+                    {
+                        "name": "inTable",
+                        "type": "table",
+                        "isPropagated": true,
+                        "vtype-ID": "$GRAPH.generated.datatransform1_output1"
+                    }
+                ]
+            }
+        }
+    },
+    "groups": [],
+    "connections": [
+        {
+            "metadata": {
+                "points": "832.9999990463257,43 860.9999985694885,43 860.9999985694885,52 888.9999980926514,52"
+            },
+            "src": {
+                "port": "result",
+                "process": "flowagentsqlexecutor1"
+            },
+            "tgt": {
+                "port": "in",
+                "process": "graphterminator1"
+            }
+        },
+        {
+            "metadata": {
+                "points": "141,43 168.99999952316284,43 168.99999952316284,52 196.99999904632568,52"
+            },
+            "src": {
+                "port": "result",
+                "process": "flowagentsqlexecutor2"
+            },
+            "tgt": {
+                "port": "inTrigger",
+                "process": "tableconsumer1"
+            }
+        },
+        {
+            "metadata": {
+                "points": "325.9999990463257,52 365.9999990463257,52"
+            },
+            "src": {
+                "port": "outTable",
+                "process": "tableconsumer1"
+            },
+            "tgt": {
+                "port": "input1",
+                "process": "datatransform1"
+            }
+        },
+        {
+            "metadata": {
+                "points": "494.9999990463257,52 534.9999990463257,52"
+            },
+            "src": {
+                "port": "output1",
+                "process": "datatransform1"
+            },
+            "tgt": {
+                "port": "inTable",
+                "process": "tableproducer1"
+            }
+        },
+        {
+            "metadata": {
+                "points": "663.9999990463257,52 703.9999990463257,52"
+            },
+            "src": {
+                "port": "out",
+                "process": "tableproducer1"
+            },
+            "tgt": {
+                "port": "sql",
+                "process": "flowagentsqlexecutor1"
+            }
+        }
+    ],
+    "inports": {},
+    "outports": {},
+    "metadata": {
+        "generation": 2
+    }
+}

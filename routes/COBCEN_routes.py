@@ -5,6 +5,7 @@ Contiene los endpoints para ejecutar el script COBCEN (MERGE) y health.
 
 from flask import Blueprint, jsonify
 from services.COBCEN_service import COBCENService
+
 import logging
 
 # Configurar logging
