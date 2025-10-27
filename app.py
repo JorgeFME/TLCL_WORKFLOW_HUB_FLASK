@@ -9,6 +9,7 @@ from routes.TLCL01_routes import tlcl01_bp
 from routes.TLCL02_routes import TLCL02_bp
 from routes.TLCL03_routes import TLCL03_bp
 from routes.TLCL04_routes import tlcl04_bp
+from routes.SIR_routes import sir_bp
 from routes.COBCEN_routes import COBCEN_bp
 from utils.config import DB_CONFIG
 
@@ -37,6 +38,7 @@ def create_app():
     app.register_blueprint(TLCL02_bp)
     app.register_blueprint(TLCL03_bp)
     app.register_blueprint(tlcl04_bp)
+    app.register_blueprint(sir_bp)
 
 
     # Ruta raíz para información general de la API
@@ -114,6 +116,25 @@ def create_app():
                                 "method": "GET",
                                 "url": "/api/TLCL04/status",
                                 "description": "Información general del proceso TLCL04",
+                            },
+                        }
+                    },
+                    "SIR: Stored Procedure Test": {
+                        "endpoints": {
+                            "execute": {
+                                "method": "POST",
+                                "url": "/api/SIR/execute",
+                                "description": "Ejecuta stored procedure SALUDO_SENCILLO",
+                            },
+                            "health_service": {
+                                "method": "GET",
+                                "url": "/api/SIR/health",
+                                "description": "Estado del servicio SIR",
+                            },
+                            "info": {
+                                "method": "GET",
+                                "url": "/api/SIR/info",
+                                "description": "Información del stored procedure",
                             },
                         }
                     },

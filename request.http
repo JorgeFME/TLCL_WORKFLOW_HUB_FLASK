@@ -19,3 +19,9 @@ Content-Type: application/json
 #POST /api/TLCL04/transfer
 POST http://127.0.0.1:5000/api/TLCL04/transfer
 Content-Type: application/json
+
+###
+
+#POST /api/SIR/execute
+POST http://127.0.0.1:5000/api/SIR/execute
+Content-Type: application/json

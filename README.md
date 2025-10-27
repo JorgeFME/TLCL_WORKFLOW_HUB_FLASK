@@ -84,18 +84,21 @@ TLCL_WORKFLOW_HUB_FLASK/
 │   ├── TLCL02_queries.py      # Consultas para KPI
 │   ├── TLCL03_queries.py      # Consultas para Huawei Counters
 │   ├── TLCL04_queries.py      # Consultas para Ericsson Counters
+│   ├── SIR_queries.py         # Consultas para SIR (Stored Procedure)
 │   └── COBCEN_queries.py      # Consultas para COBCEN
 ├── services/
 │   ├── TLCL01_service.py      # Lógica de negocio Electric Fact
 │   ├── TLCL02_service.py      # Lógica de negocio KPI
 │   ├── TLCL03_service.py      # Lógica de negocio Huawei Counters
 │   ├── TLCL04_service.py      # Lógica de negocio Ericsson Counters
+│   ├── SIR_service.py         # Lógica de negocio SIR (Stored Procedure)
 │   └── COBCEN_service.py      # Lógica de negocio COBCEN
 └── routes/
     ├── TLCL01_routes.py       # Endpoints REST Electric Fact
     ├── TLCL02_routes.py       # Endpoints REST KPI
     ├── TLCL03_routes.py       # Endpoints REST Huawei Counters
     ├── TLCL04_routes.py       # Endpoints REST Ericsson Counters
+    ├── SIR_routes.py          # Endpoints REST SIR (Stored Procedure)
     └── COBCEN_routes.py       # Endpoints REST COBCEN
 ```
 
@@ -122,6 +125,11 @@ TLCL04 (Ericsson Counters):
 - `POST /api/TLCL04/transfer` — Ejecuta transferencia de datos de Ericsson Counters con SQL Executor inicial
 - `GET /api/TLCL04/health` — Estado del servicio TLCL04
 - `GET /api/TLCL04/status` — Información general del proceso TLCL04
+
+SIR (Stored Procedure):
+- `POST /api/SIR/execute` — Ejecuta el stored procedure SALUDO_SENCILLO
+- `GET /api/SIR/health` — Estado del servicio SIR
+- `GET /api/SIR/info` — Obtiene información del stored procedure
 
 COBCEN:
 - `POST /api/COBCEN/merge` — Ejecuta `queries/COBCEN_merge.sql` (MERGE secuencial)
