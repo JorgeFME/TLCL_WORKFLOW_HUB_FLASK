@@ -1,10 +1,9 @@
 """
-Consultas para el proceso SIR.
-Contiene métodos para ejecutar stored procedures en la base de datos.
+Módulo para gestionar las consultas SQL específicas del proceso SIR.
+Incluye utilidades para ejecutar stored procedures relacionados con SIR.
 """
 
 import logging
-
 from utils.config import DB_CONFIG
 
 class SIRQueries:
@@ -30,11 +29,11 @@ class SIRQueries:
             
             cursor = self.connection.cursor
             
-            # Usar el esquema completo
-            schema = "B4B85072923A44789F391B1E8CB24202"
+            # Usar el esquema desde la configuración
+            schema = DB_CONFIG['schema']
             
             # Llamada directa igual que en DBeaver
-            cursor.execute(f"CALL {DB_CONFIG["schema"]}.SP_TLCL_SIR(?, ?)")
+            cursor.execute(f"CALL {schema}.SP_TLCL_SIR(?, ?)", (param1, param2))
             
             
             # Intentar obtener resultado si el SP devuelve algo
