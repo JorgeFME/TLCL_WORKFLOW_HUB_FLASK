@@ -124,7 +124,7 @@ def create_app():
                             "execute": {
                                 "method": "POST",
                                 "url": "/api/SIR/execute",
-                                "description": "Ejecuta stored procedure SALUDO_SENCILLO",
+                                "description": "Ejecuta stored procedure SP_TLCL_SIR",
                             },
                             "health_service": {
                                 "method": "GET",

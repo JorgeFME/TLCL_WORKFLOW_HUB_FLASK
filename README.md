@@ -127,7 +127,7 @@ TLCL04 (Ericsson Counters):
 - `GET /api/TLCL04/status` — Información general del proceso TLCL04
 
 SIR (Stored Procedure):
-- `POST /api/SIR/execute` — Ejecuta el stored procedure SALUDO_SENCILLO
+- `POST /api/SIR/execute` — Ejecuta el stored procedure SP_TLCL_SIR
 - `GET /api/SIR/health` — Estado del servicio SIR
 - `GET /api/SIR/info` — Obtiene información del stored procedure
 
