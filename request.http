@@ -25,3 +25,9 @@ Content-Type: application/json
 #POST /api/SIR/execute
 POST http://127.0.0.1:5000/api/SIR/execute
 Content-Type: application/json
+
+###
+
+#POST /api/COBCEN/execute
+POST http://127.0.0.1:5000/api/COBCEN/merge
+Content-Type: application/json

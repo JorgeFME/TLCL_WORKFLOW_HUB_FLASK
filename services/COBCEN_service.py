@@ -1,6 +1,6 @@
 """
-Servicio para gestionar las operaciones del proceso SITE.
-Contiene la lógica de negocio para las consultas de ELCEL_EE_SITE.
+Servicio para gestionar las operaciones del proceso COBCEN.
+Contiene la lógica de negocio para ejecutar el stored procedure SP_TLCL_COBCEN.
 """
 
 import logging
@@ -11,10 +11,8 @@ class COBCENService:
     """Servicio para gestionar las operaciones del proceso COBCEN."""
     
     def __init__(self):
-        """Inicializa el servicio SITE."""
+        """Inicializa el servicio COBCEN."""
         self.logger = logging.getLogger(__name__)
-    
-    # Eliminado: método de preview get_site_data no utilizado
     
     def health_check(self):
         """Verifica el estado de salud del servicio COBCEN.
@@ -47,11 +45,15 @@ class COBCENService:
                 'database_connection': 'ERROR'
             }
 
-    def run_cobcen_merge(self):
-        """Ejecuta el script de MERGE de COBCEN definido en queryCobcen.sql.
+    def execute_SP_TLCL_COBCEN_sp(self, param1=0, param2=''):
+        """Ejecuta el stored procedure SP_TLCL_COBCEN.
+
+        Args:
+            param1 (int): Primer parámetro de entrada (opcional, default: 0)
+            param2 (str): Segundo parámetro de entrada (opcional, default: '')
 
         Returns:
-            dict: Resumen de la ejecución del script.
+            dict: Resultado de la ejecución del stored procedure.
         """
         connection = None
         try:
@@ -64,10 +66,10 @@ class COBCENService:
                 }
 
             queries = COBCENQueries(connection)
-            exec_result = queries.run_cobcen_sql_script()
+            exec_result = queries.execute_SP_TLCL_COBCEN_sp(param1, param2)
             return exec_result
         except Exception as e:
-            self.logger.error(f"Error en run_cobcen_merge: {str(e)}")
+            self.logger.error(f"Error en execute_SP_TLCL_COBCEN_sp: {str(e)}")
             return {
                 'success': False,
                 'message': f'Error interno del servidor: {str(e)}',
@@ -76,3 +78,14 @@ class COBCENService:
         finally:
             if connection:
                 connection.close()
+
+    # Método legacy mantenido para compatibilidad hacia atrás
+    def run_cobcen_merge(self):
+        """Método legacy que ahora ejecuta el stored procedure SP_TLCL_COBCEN.
+        Mantenido para compatibilidad hacia atrás.
+
+        Returns:
+            dict: Resultado de la ejecución del stored procedure.
+        """
+        self.logger.warning("Método run_cobcen_merge es legacy. Use execute_SP_TLCL_COBCEN_sp en su lugar.")
+        return self.execute_SP_TLCL_COBCEN_sp()
