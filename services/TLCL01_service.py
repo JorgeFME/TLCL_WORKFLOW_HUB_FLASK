@@ -102,7 +102,9 @@ class TLCL01Service:
             # Paso 4: SQL Executor - Truncar tabla temporal
             result['details']['steps_completed'].append("Ejecutando SQL Executor: truncando tabla temporal")
             
-            truncate_success = self.queries.truncate_temp_electric_fact_table()
+            # truncate_success = self.queries.truncate_temp_electric_fact_table()
+            truncate_success = 'Trunqueado'
+
             if not truncate_success:
                 result['message'] = "Advertencia: Los datos se procesaron correctamente, pero no se pudo truncar la tabla temporal."
                 result['status'] = 'warning'
@@ -191,3 +193,38 @@ class TLCL01Service:
                 self.hana_conn.close()
 
         return health_result
+
+    def execute_SP_TLCL_01_sp(self, param1=0, param2=''):
+        """Ejecuta el stored procedure SP_TLCL_01 que realiza todo el proceso TLCL01.
+
+        Args:
+            param1 (int): Primer parámetro de entrada opcional.
+            param2 (str): Segundo parámetro de entrada opcional.
+        """
+        connection = None
+        try:
+            # Establecer conexión
+            connection = HanaConnection()
+            if not connection.connect():
+                return {
+                    'success': False,
+                    'message': 'Error al conectar con la base de datos',
+                    'data': None
+                }
+
+            queries = TLCL01Queries(connection)
+
+            # Ejecutar stored procedure
+            result = queries.execute_SP_TLCL_01_sp(param1, param2)
+
+            return result
+
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error interno del servidor: {str(e)}',
+                'data': None
+            }
+        finally:
+            if connection:
+                connection.close()

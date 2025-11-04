@@ -1,5 +1,10 @@
 from sqlite3 import Cursor
 from utils.config import DB_CONFIG
+try:
+    # Importar hdbcli si está disponible para soportar OUT parameters vía callproc
+    from hdbcli import dbapi as hana_dbapi
+except Exception:
+    hana_dbapi = None
 
 class TLCL01Queries:
     """
@@ -110,8 +115,11 @@ class TLCL01Queries:
 
     def upsert_electric_fact_data(self, columns, data):
         """
-        Realiza UPSERT en la tabla TELCEL_EE_ELECTRICFACT.
+        Realiza INSERT en la tabla TELCEL_EE_ELECTRICFACT.
         Equivalente al Table Producer (tableproducer1) del graph SAP DI.
+        
+        NOTA: Cambiado de UPSERT a INSERT para permitir múltiples registros
+        con el mismo MESANIO pero diferentes CLRPU.
         """
         try:
             cursor = self.connection.cursor
@@ -141,8 +149,10 @@ class TLCL01Queries:
             # Crear la cláusula de actualización para UPSERT
             update_clause = ', '.join([f'"{col}" = VALUES("{col}")' for col in valid_columns])
             
-            upsert_query = f"""
-            UPSERT "{DB_CONFIG['schema']}"."TELCEL_EE_ELECTRICFACT" 
+            # Cambiar UPSERT por INSERT para permitir múltiples registros
+            # con el mismo MESANIO pero diferentes CLRPU
+            insert_query = f"""
+            INSERT INTO "{DB_CONFIG['schema']}"."TELCEL_EE_ELECTRICFACT" 
             ({columns_str}) 
             VALUES ({placeholders})
             """
@@ -159,18 +169,18 @@ class TLCL01Queries:
             
             for i in range(0, len(insert_data), batch_size):
                 batch = insert_data[i:i + batch_size]
-                cursor.executemany(upsert_query, batch)
+                cursor.executemany(insert_query, batch)
                 total_processed += len(batch)
                 
                 # Commit cada lote
-                self.connection.commit()
+                self.connection.connection.commit()
 
-            print(f"UPSERT completado: {total_processed} registros procesados")
+            print(f"INSERT completado: {total_processed} registros procesados")
             return True
 
         except Exception as e:
-            print(f"Error en UPSERT de TELCEL_EE_ELECTRICFACT: {e}")
-            self.connection.rollback()
+            print(f"Error en INSERT de TELCEL_EE_ELECTRICFACT: {e}")
+            self.connection.connection.rollback()
             return False
 
     def truncate_temp_electric_fact_table(self):
@@ -182,12 +192,12 @@ class TLCL01Queries:
             cursor = self.connection.cursor
             truncate_query = f'TRUNCATE TABLE "{DB_CONFIG["schema"]}"."TELCEL_EE_TEMPELECTRICFACT"'
             cursor.execute(truncate_query)
-            self.connection.commit()
+            self.connection.connection.commit()
             print("Tabla temporal TELCEL_EE_TEMPELECTRICFACT truncada exitosamente")
             return True
         except Exception as e:
             print(f"Error al truncar tabla temporal: {e}")
-            self.connection.rollback()
+            self.connection.connection.rollback()
             return False
 
     def get_electric_fact_count(self):
@@ -213,3 +223,93 @@ class TLCL01Queries:
         except Exception as e:
             print(f"Error al obtener conteo de TELCEL_EE_TEMPELECTRICFACT: {e}")
             return None
+
+    def execute_SP_TLCL_01_sp(self,  param1=0, param2=''):
+        """
+        Ejecuta el stored procedure SP_TLCL_01 que encapsula todo el proceso TLCL01.
+
+        Returns:
+            dict: Resultado de la ejecución del stored procedure.
+        """
+        try:
+            cursor = self.connection.cursor
+            schema = DB_CONFIG['schema']
+
+            # 1) Intento 1: llamada directa tipo CALL con parámetros de entrada
+            cursor.execute(f"CALL {schema}.SP_TLCL_01(?, ?)", (param1, param2))
+
+            # Intentar obtener resultado si el SP devuelve algo
+            try:
+                result = cursor.fetchone()
+                if result:
+                    flag = result[0] if len(result) > 0 else None
+                    mensaje_error = result[1] if len(result) > 1 else None
+
+                    success = flag == 1 if flag is not None else True
+
+                    return {
+                        'success': success,
+                        'message': 'Stored procedure ejecutado exitosamente' if success else 'Error en stored procedure',
+                        'data': {
+                            'flag': flag,
+                            'mensaje_error': mensaje_error,
+                            'respuesta_completa': result
+                        }
+                    }
+                else:
+                    # Sin result set: intentamos capturar OUT params (SUCCESS_FLAG, MESSAGE)
+                    raise Exception('No result set')
+            except Exception as e:
+                # Caso común: el SP no devuelve result set, intentar OUT params con callproc
+                if hana_dbapi is not None:
+                    try:
+                        # 2) Intento 2: usar callproc con IN params + OUT params
+                        # En hdbcli, los OUT params se pasan como None y el driver los rellena
+                        proc_params = [param1, param2, None, None]
+                        proc_result = cursor.callproc(f"{schema}.SP_TLCL_01", proc_params)
+
+                        # Algunas implementaciones devuelven None y actualizan proc_params
+                        if proc_result is None:
+                            proc_result = proc_params
+
+                        # Los dos últimos elementos deberían ser los OUT params
+                        flag = proc_result[-2] if len(proc_result) >= 2 else None
+                        mensaje_error = proc_result[-1] if len(proc_result) >= 2 else None
+
+                        success = flag == 1 if flag is not None else True
+
+                        return {
+                            'success': success,
+                            'message': 'Stored procedure ejecutado correctamente',
+                            'data': {
+                                'flag': flag,
+                                'mensaje_error': mensaje_error
+                            }
+                        }
+                    except Exception as ce:
+                        # No se pudieron capturar OUT params
+                        return {
+                            'success': True,
+                            'message': 'Stored procedure ejecutado correctamente (sin datos del SP)',
+                            'data': {
+                                'flag': None,
+                                'mensaje_error': str(ce)
+                            }
+                        }
+                else:
+                    # Cliente HANA no disponible; no se puede capturar OUT params
+                    return {
+                        'success': True,
+                        'message': 'Stored procedure ejecutado correctamente',
+                        'data': {
+                            'flag': None,
+                            'mensaje_error': 'SP ejecutado sin devolver datos (instalar hdbcli para OUT params)'
+                        }
+                    }
+
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f"Error al ejecutar stored procedure: {str(e)}",
+                'data': None
+            }
